@@ -1,5 +1,5 @@
 .ig
-Copyright (C) 2005, 2006, 2008, 2009
+Copyright (C) 2005, 2006, 2008, 2009, 2010
   Free Software Foundation, Inc.
 
 Written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>
@@ -192,7 +192,7 @@ full macro capabilities are available.
 On the other hand, table processing with
 .B hdtbl
 is much slower than using the
-.BR tbl (@MAN1EXT)
+.BR tbl (@MAN1EXT@)
 preprocessor.
 .
 A further advantage is that the HTML-like syntax of
@@ -897,6 +897,30 @@ argument above.
 .
 .SH HDTBL CUSTOMIZATION
 .
+.PP
+Before creating the first table,
+you should configure default values
+to minimize the markup
+needed in each table.
+The following example
+sets up defaults
+suitable for typical papers:
+.PP
+.RS
+.nf
+.CR ".ds t*bgc white\e\[dq] background color
+.CR ".ds t*fgc black\e\[dq] foreground color
+.CR ".ds t*bc black\e\[dq]  border color
+.CR ".nr t*cpd 0.1n\e\[dq]  cell padding
+.fi
+.RE
+.PP
+The file
+.B examples/common.roff
+provides another example setup
+in the ``minimal Page setup'' section.
+.
+.PP
 A table which does not fit on a partially filled page is printed
 automatically on the top of the next page if you append the little
 utility macro
@@ -919,17 +943,29 @@ if you use the
 macro package.
 .
 .PP
-.B hdtbl
-has built-in page header and page footer macros,
-.B HM
-and
-.BR BM .
-If they interfere with your own header and footer macros, simply
-say
-.CR ".rm\ HM"
-and
-.CR ".rm\ BM"
-to remove them.
+The macro
+.CR t*EM
+checks for held or kept tables,
+and for missing
+.CR ETB
+macros (table not closed).
+You can append this macro
+to the ``end'' macro of your document's main macro package.
+For example:
+.
+.PP
+.RS
+.nf
+.CR ".am pg@end-text"
+.CR ".  t*EM"
+.CR ".."
+.fi
+.RE
+.
+.PP
+If you use the
+.B ms
+macro package.
 .
 .
 .SH AUTHOR

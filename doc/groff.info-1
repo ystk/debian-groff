@@ -1,10 +1,10 @@
 This is groff.info, produced by makeinfo version 4.13 from
 ./groff.texinfo.
 
-This manual documents GNU `troff' version 1.20.1.
+This manual documents GNU `troff' version 1.21.
 
    Copyright (C) 1994-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2009 Free Software Foundation, Inc.
+2008, 2009, 2010 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -52,10 +52,10 @@ GNU troff
 * Program and File Index::
 * Concept Index::
 
-   This manual documents GNU `troff' version 1.20.1.
+   This manual documents GNU `troff' version 1.21.
 
    Copyright (C) 1994-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2009 Free Software Foundation, Inc.
+2008, 2009, 2010 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -333,6 +333,9 @@ is useful when dealing with preprocessors is `soelim'.
    A free implementation of `grap', a preprocessor for drawing graphs,
 can be obtained as an extra package; `groff' can use `grap' also.
 
+   Unique to `groff' is the `preconv' preprocessor which enables
+`groff' to handle documents in various input encodings.
+
    There are other preprocessors in existence, but, unfortunately, no
 free implementations are available.  Among them are preprocessors for
 drawing mathematical pictures (`ideal') and chemical structures
@@ -411,33 +414,34 @@ File: groff.info,  Node: Groff Options,  Next: Environment,  Prev: Invoking grof
 appropriate for the selected device.  The default device is `ps' (but
 it can be changed when `groff' is configured and built).  It can
 optionally preprocess with any of `gpic', `geqn', `gtbl', `ggrn',
-`grap', `grefer', or `gsoelim'.
+`grap', `grefer', `gsoelim', or `preconv'.
 
    This section only documents options to the `groff' front end.  Many
 of the arguments to `groff' are passed on to `gtroff', therefore those
 are also included.  Arguments to pre- or postprocessors can be found in
 *note Invoking gpic::, *note Invoking geqn::, *note Invoking gtbl::,
 *note Invoking ggrn::, *note Invoking grefer::, *note Invoking
-gsoelim::, *note Invoking grotty::, *note Invoking grops::, *note
-Invoking grohtml::, *note Invoking grodvi::, *note Invoking grolj4::,
-*note Invoking grolbp::, and *note Invoking gxditview::.
+gsoelim::, *note Invoking preconv::, *note Invoking grotty::, *note
+Invoking grops::, *note Invoking grohtml::, *note Invoking grodvi::,
+*note Invoking grolj4::, *note Invoking grolbp::, and *note Invoking
+gxditview::.
 
    The command line format for `groff' is:
 
 
-     groff [ -abceghilpstvzCEGNRSUVXZ ] [ -FDIR ] [ -mNAME ]
-           [ -TDEF ] [ -fFAM ] [ -wNAME ] [ -WNAME ]
-           [ -MDIR ] [ -dCS ] [ -rCN ] [ -nNUM ]
-           [ -oLIST ] [ -PARG ] [ -LARG ] [ -IDIR ]
-           [ FILES... ]
+     groff [ -abceghiklpstvzCEGNRSUVXZ ] [ -dCS ] [ -DARG ]
+           [ -fFAM ] [ -FDIR ] [ -IDIR ] [ -KARG ]
+           [ -LARG ] [ -mNAME ] [ -MDIR ] [ -nNUM ]
+           [ -oLIST ] [ -PARG ] [ -rCN ] [ -TDEF ]
+           [ -wNAME ] [ -WNAME ] [ FILES... ]
 
    The command line format for `gtroff' is as follows.
 
 
-     gtroff [ -abcivzCERU ] [ -wNAME ] [ -WNAME ] [ -dCS ]
-            [ -fFAM ] [ -mNAME ] [ -nNUM ]
-            [ -oLIST ] [ -rCN ] [ -TNAME ]
-            [ -FDIR ] [ -MDIR ] [ FILES... ]
+     gtroff [ -abcivzCERU ] [ -dCS ] [ -fFAM ] [ -FDIR ]
+            [ -mNAME ] [ -MDIR ] [ -nNUM ] [ -oLIST ]
+            [ -rCN ] [ -TNAME ] [ -wNAME ] [ -WNAME ]
+            [ FILES... ]
 
 Obviously, many of the options to `groff' are actually passed on to
 `gtroff'.
@@ -451,14 +455,56 @@ to format a file.
 
    Here's the description of the command-line options:
 
-`-h'
-     Print a help message.
+`-a'
+     Generate an ASCII approximation of the typeset output.  The
+     read-only register `.A' is then set to 1.  *Note Built-in
+     Registers::.  A typical example is
+
+
+          groff -a -man -Tdvi troff.man | less
+
+     which shows how lines are broken for the DVI device.  Note that
+     this option is rather useless today since graphic output devices
+     are available virtually everywhere.
+
+`-b'
+     Print a backtrace with each warning or error message.  This
+     backtrace should help track down the cause of the error.  The line
+     numbers given in the backtrace may not always be correct: `gtroff'
+     can get confused by `as' or `am' requests while counting line
+     numbers.
+
+`-c'
+     Suppress color output.
+
+`-C'
+     Enable compatibility mode.  *Note Implementation Differences::,
+     for the list of incompatibilities between `groff' and AT&T `troff'.
+
+`-dCS'
+`-dNAME=S'
+     Define C or NAME to be a string S.  C must be a one-letter name;
+     NAME can be of arbitrary length.  All string assignments happen
+     before loading any macro file (including the start-up file).
+
+`-DARG'
+     Set default input encoding used by `preconv' to ARG.  Implies `-k'.
 
 `-e'
      Preprocess with `geqn'.
 
-`-t'
-     Preprocess with `gtbl'.
+`-E'
+     Inhibit all error messages.
+
+`-fFAM'
+     Use FAM as the default font family.  *Note Font Families::.
+
+`-FDIR'
+     Search `DIR' for subdirectories `devNAME' (NAME is the name of the
+     device), for the `DESC' file, and for font files before looking in
+     the standard directories (*note Font Directories::).  This option
+     is passed to all pre- and postprocessors using the
+     `GROFF_FONT_PATH' environment variable.
 
 `-g'
      Preprocess with `ggrn'.
@@ -466,44 +512,38 @@ to format a file.
 `-G'
      Preprocess with `grap'.
 
-`-p'
-     Preprocess with `gpic'.
+`-h'
+     Print a help message.
 
-`-s'
-     Preprocess with `gsoelim'.
+`-i'
+     Read the standard input after all the named input files have been
+     processed.
 
-`-c'
-     Suppress color output.
+`-IDIR'
+     This option may be used to specify a directory to search for files.
+     It is passed to the following programs:
 
-`-R'
-     Preprocess with `grefer'.  No mechanism is provided for passing
-     arguments to `grefer' because most `grefer' options have
-     equivalent commands which can be included in the file.  *Note
-     grefer::, for more details.
+        * `gsoelim' (see *note gsoelim:: for more details); it also
+          implies `groff''s `-s' option.
 
-     Note that `gtroff' also accepts a `-R' option, which is not
-     accessible via `groff'.  This option prevents the loading of the
-     `troffrc' and `troffrc-end' files.
+        * `gtroff'; it is used to search files named in the `psbb' and
+          `so' requests.
 
-`-v'
-     Make programs run by `groff' print out their version number.
+        * `grops'; it is used to search files named in the
+          `\X'ps: import' and `\X'ps: file' escapes.
 
-`-V'
-     Print the pipeline on `stdout' instead of executing it.  If
-     specified more than once, print the pipeline on `stderr' and
-     execute it.
+     The current directory is always searched first.  This option may be
+     specified more than once; the directories are searched in the order
+     specified.  No directory search is performed for files specified
+     using an absolute path.
 
-`-z'
-     Suppress output from `gtroff'.  Only error messages are printed.
+`-k'
+     Preprocess with `preconv'.  This is run before any other
+     preprocessor.  Please refer to `preconv''s manual page for its
+     behaviour if no `-K' (or `-D') option is specified.
 
-`-Z'
-     Do not postprocess the output of `gtroff'.  Normally `groff'
-     automatically runs the appropriate postprocessor.
-
-`-PARG'
-     Pass ARG to the postprocessor.  Each argument should be passed
-     with a separate `-P' option.  Note that `groff' does not prepend
-     `-' to ARG before passing it to the postprocessor.
+`-KARG'
+     Set input encoding used by preconv to ARG.  Implies `-k'.
 
 `-l'
      Send the output to a spooler for printing.  The command used for
@@ -516,6 +556,73 @@ to format a file.
      separate `-L' option.  Note that `groff' does not prepend a `-' to
      ARG before passing it to the postprocessor.  If the `print'
      keyword in the device description file is missing, `-L' is ignored.
+
+`-mNAME'
+     Read in the file `NAME.tmac'.  Normally `groff' searches for this
+     in its macro directories.  If it isn't found, it tries `tmac.NAME'
+     (searching in the same directories).
+
+`-MDIR'
+     Search directory `DIR' for macro files before the standard
+     directories (*note Macro Directories::).
+
+`-nNUM'
+     Number the first page NUM.
+
+`-N'
+     Don't allow newlines with `eqn' delimiters.  This is the same as
+     the `-N' option in `geqn'.
+
+`-oLIST'
+     Output only pages in LIST, which is a comma-separated list of page
+     ranges; `N' means print page N, `M-N' means print every page
+     between M and N, `-N' means print every page up to N, `N-' means
+     print every page beginning with N.  `gtroff' exits after printing
+     the last page in the list.  All the ranges are inclusive on both
+     ends.
+
+     Within `gtroff', this information can be extracted with the `.P'
+     register.  *Note Built-in Registers::.
+
+     If your document restarts page numbering at the beginning of each
+     chapter, then `gtroff' prints the specified page range for each
+     chapter.
+
+`-p'
+     Preprocess with `gpic'.
+
+`-PARG'
+     Pass ARG to the postprocessor.  Each argument should be passed
+     with a separate `-P' option.  Note that `groff' does not prepend
+     `-' to ARG before passing it to the postprocessor.
+
+`-rCN'
+`-rNAME=N'
+     Set number register C or NAME to the value N.  C must be a
+     one-letter name; NAME can be of arbitrary length.  N can be any
+     `gtroff' numeric expression.  All register assignments happen
+     before loading any macro file (including the start-up file).
+
+`-R'
+     Preprocess with `grefer'.  No mechanism is provided for passing
+     arguments to `grefer' because most `grefer' options have
+     equivalent commands which can be included in the file.  *Note
+     grefer::, for more details.
+
+     Note that `gtroff' also accepts a `-R' option, which is not
+     accessible via `groff'.  This option prevents the loading of the
+     `troffrc' and `troffrc-end' files.
+
+`-s'
+     Preprocess with `gsoelim'.
+
+`-S'
+     Safer mode.  Pass the `-S' option to `gpic' and disable the
+     `open', `opena', `pso', `sy', and `pi' requests.  For security
+     reasons, this is enabled by default.
+
+`-t'
+     Preprocess with `gtbl'.
 
 `-TDEV'
      Prepare output for device DEV.  The default device is `ps', unless
@@ -582,6 +689,25 @@ to format a file.
      Files::, for more info.)  This can be overridden with the `-X'
      option.
 
+`-U'
+     Unsafe mode.  This enables the `open', `opena', `pso', `sy', and
+     `pi' requests.
+
+`-wNAME'
+     Enable warning NAME.  Available warnings are described in *note
+     Debugging::.  Multiple `-w' options are allowed.
+
+`-WNAME'
+     Inhibit warning NAME.  Multiple `-W' options are allowed.
+
+`-v'
+     Make programs run by `groff' print out their version number.
+
+`-V'
+     Print the pipeline on `stdout' instead of executing it.  If
+     specified more than once, print the pipeline on `stderr' and
+     execute it.
+
 `-X'
      Preview with `gxditview' instead of using the usual postprocessor.
      This is unlikely to produce good results except with `-Tps'.
@@ -591,123 +717,12 @@ to format a file.
      the specified device, whereas the latter uses X-specific fonts and
      metrics.
 
-`-N'
-     Don't allow newlines with `eqn' delimiters.  This is the same as
-     the `-N' option in `geqn'.
+`-z'
+     Suppress output from `gtroff'.  Only error messages are printed.
 
-`-S'
-     Safer mode.  Pass the `-S' option to `gpic' and disable the
-     `open', `opena', `pso', `sy', and `pi' requests.  For security
-     reasons, this is enabled by default.
-
-`-U'
-     Unsafe mode.  This enables the `open', `opena', `pso', `sy', and
-     `pi' requests.
-
-`-a'
-     Generate an ASCII approximation of the typeset output.  The
-     read-only register `.A' is then set to 1.  *Note Built-in
-     Registers::.  A typical example is
-
-
-          groff -a -man -Tdvi troff.man | less
-
-     which shows how lines are broken for the DVI device.  Note that
-     this option is rather useless today since graphic output devices
-     are available virtually everywhere.
-
-`-b'
-     Print a backtrace with each warning or error message.  This
-     backtrace should help track down the cause of the error.  The line
-     numbers given in the backtrace may not always be correct: `gtroff'
-     can get confused by `as' or `am' requests while counting line
-     numbers.
-
-`-i'
-     Read the standard input after all the named input files have been
-     processed.
-
-`-wNAME'
-     Enable warning NAME.  Available warnings are described in *note
-     Debugging::.  Multiple `-w' options are allowed.
-
-`-WNAME'
-     Inhibit warning NAME.  Multiple `-W' options are allowed.
-
-`-E'
-     Inhibit all error messages.
-
-`-C'
-     Enable compatibility mode.  *Note Implementation Differences::,
-     for the list of incompatibilities between `groff' and AT&T `troff'.
-
-`-dCS'
-`-dNAME=S'
-     Define C or NAME to be a string S.  C must be a one-letter name;
-     NAME can be of arbitrary length.  All string assignments happen
-     before loading any macro file (including the start-up file).
-
-`-fFAM'
-     Use FAM as the default font family.  *Note Font Families::.
-
-`-mNAME'
-     Read in the file `NAME.tmac'.  Normally `groff' searches for this
-     in its macro directories.  If it isn't found, it tries `tmac.NAME'
-     (searching in the same directories).
-
-`-nNUM'
-     Number the first page NUM.
-
-`-oLIST'
-     Output only pages in LIST, which is a comma-separated list of page
-     ranges; `N' means print page N, `M-N' means print every page
-     between M and N, `-N' means print every page up to N, `N-' means
-     print every page beginning with N.  `gtroff' exits after printing
-     the last page in the list.  All the ranges are inclusive on both
-     ends.
-
-     Within `gtroff', this information can be extracted with the `.P'
-     register.  *Note Built-in Registers::.
-
-     If your document restarts page numbering at the beginning of each
-     chapter, then `gtroff' prints the specified page range for each
-     chapter.
-
-`-rCN'
-`-rNAME=N'
-     Set number register C or NAME to the value N.  C must be a
-     one-letter name; NAME can be of arbitrary length.  N can be any
-     `gtroff' numeric expression.  All register assignments happen
-     before loading any macro file (including the start-up file).
-
-`-FDIR'
-     Search `DIR' for subdirectories `devNAME' (NAME is the name of the
-     device), for the `DESC' file, and for font files before looking in
-     the standard directories (*note Font Directories::).  This option
-     is passed to all pre- and postprocessors using the
-     `GROFF_FONT_PATH' environment variable.
-
-`-MDIR'
-     Search directory `DIR' for macro files before the standard
-     directories (*note Macro Directories::).
-
-`-IDIR'
-     This option may be used to specify a directory to search for files.
-     It is passed to the following programs:
-
-        * `gsoelim' (see *note gsoelim:: for more details); it also
-          implies `groff''s `-s' option.
-
-        * `gtroff'; it is used to search files named in the `psbb' and
-          `so' requests.
-
-        * `grops'; it is used to search files named in the
-          `\X'ps: import' and `\X'ps: file' escapes.
-
-     The current directory is always searched first.  This option may be
-     specified more than once; the directories are searched in the order
-     specified.  No directory search is performed for files specified
-     using an absolute path.
+`-Z'
+     Do not postprocess the output of `gtroff'.  Normally `groff'
+     automatically runs the appropriate postprocessor.
 
 
 File: groff.info,  Node: Environment,  Next: Macro Directories,  Prev: Groff Options,  Up: Invoking groff
@@ -718,32 +733,39 @@ File: groff.info,  Node: Environment,  Next: Macro Directories,  Prev: Groff Opt
 There are also several environment variables (of the operating system,
 not within `gtroff') which can modify the behavior of `groff'.
 
+`GROFF_BIN_PATH'
+     This search path, followed by `PATH', is used for commands executed
+     by `groff'.
+
 `GROFF_COMMAND_PREFIX'
      If this is set to X, then `groff' runs `Xtroff' instead of
      `gtroff'.  This also applies to `tbl', `pic', `eqn', `grn',
      `refer', and `soelim'.  It does not apply to `grops', `grodvi',
-     `grotty', `pre-grohtml', `post-grohtml', `grolj4', and `gxditview'.
+     `grotty', `pre-grohtml', `post-grohtml', `preconv', `grolj4', and
+     `gxditview'.
 
      The default command prefix is determined during the installation
      process.  If a non-GNU troff system is found, prefix `g' is used,
      none otherwise.
 
-`GROFF_TMAC_PATH'
-     A colon-separated list of directories in which to search for macro
-     files (before the default directories are tried).  *Note Macro
-     Directories::.
-
-`GROFF_TYPESETTER'
-     The default output device.
+`GROFF_ENCODING'
+     The value of this environment value is passed to the `preconv'
+     preprocessor to select the encoding of input files.  Setting this
+     option implies `groff''s command line option `-k' (this is,
+     `groff' actually always calls `preconv').  If set without a value,
+     `groff' calls `preconv' without arguments.  An explicit `-K'
+     command line option overrides the value of `GROFF_ENCODING'.  See
+     the manual page of `preconv' for details.
 
 `GROFF_FONT_PATH'
      A colon-separated list of directories in which to search for the
      `dev'NAME directory (before the default directories are tried).
      *Note Font Directories::.
 
-`GROFF_BIN_PATH'
-     This search path, followed by `PATH', is used for commands executed
-     by `groff'.
+`GROFF_TMAC_PATH'
+     A colon-separated list of directories in which to search for macro
+     files (before the default directories are tried).  *Note Macro
+     Directories::.
 
 `GROFF_TMPDIR'
      The directory in which `groff' creates temporary files.  If this is
@@ -752,6 +774,9 @@ not within `gtroff') which can modify the behavior of `groff'.
      system-dependent default directory (on Unix and GNU/Linux systems,
      this is usually `/tmp').  `grops', `grefer', `pre-grohtml', and
      `post-grohtml' can create temporary files in this directory.
+
+`GROFF_TYPESETTER'
+     The default output device.
 
    Note that MS-DOS and MS-Windows ports of `groff' use semi-colons,
 rather than colons, to separate the directories in the lists described
@@ -790,11 +815,11 @@ files are (in that order):
 
           /usr/local/lib/groff/site-tmac
           /usr/local/share/groff/site-tmac
-          /usr/local/share/groff/1.20.1/tmac
+          /usr/local/share/groff/1.21/tmac
 
-     assuming that the version of `groff' is 1.20.1, and the
-     installation prefix was `/usr/local'.  It is possible to fine-tune
-     those directories during the installation process.
+     assuming that the version of `groff' is 1.21, and the installation
+     prefix was `/usr/local'.  It is possible to fine-tune those
+     directories during the installation process.
 
 
 File: groff.info,  Node: Font Directories,  Next: Paper Size,  Prev: Macro Directories,  Up: Invoking groff
@@ -830,11 +855,11 @@ DVI output, and `/foo/bar' as a font directory, the font files for
 
 
           /usr/local/share/groff/site-font
-          /usr/local/share/groff/1.20.1/font
+          /usr/local/share/groff/1.21/font
 
-     assuming that the version of `groff' is 1.20.1, and the
-     installation prefix was `/usr/local'.  It is possible to fine-tune
-     those directories during the installation process.
+     assuming that the version of `groff' is 1.21, and the installation
+     prefix was `/usr/local'.  It is possible to fine-tune those
+     directories during the installation process.
 
 
 File: groff.info,  Node: Paper Size,  Next: Invocation Examples,  Prev: Font Directories,  Up: Invoking groff
@@ -2255,6 +2280,14 @@ Miscellaneous Number Registers
 
      Default: 2n.
 
+ -- Register: \n[DD]
+     Sets the vertical spacing before and after a display, a `tbl'
+     table, an `eqn' equation, or a `pic' image.
+
+     Effective: next paragraph.
+
+     Default: 0.5v.
+
 
 File: groff.info,  Node: ms Cover Page Macros,  Next: ms Body Text,  Prev: ms Document Control Registers,  Up: ms
 
@@ -3657,7 +3690,9 @@ with the blank line macro request `blm'.  *Note Blank Line Traps::.
 
    A line that begins with a space causes a break and the space is
 output at the beginning of the next line.  Note that this space isn't
-adjusted, even in fill mode.
+adjusted, even in fill mode; however, the behaviour can be modified
+with the leading spaces macro request `lsm'.  *Note Leading Spaces
+Traps::.
 
    The end of file also causes a break - otherwise the last line of the
 document may vanish!
@@ -3868,6 +3903,24 @@ File: groff.info,  Node: Expressions,  Next: Identifiers,  Prev: Measurements,  
      this works only within `if' and `while' requests).(1) (*note
      Expressions-Footnote-1::)  See below for the use of unary
      operators in motion requests.
+
+     The logical not operator, as described above, works only within
+     `if' and `while' requests.  Furthermore, it may appear only at the
+     beginning of an expression, and negates the entire expression.
+     Attempting to insert the `!' operator within the expression
+     results in a `numeric expression expected' warning.  This
+     maintains bug-compatibility with old versions of `troff'.
+
+     Example:
+
+
+          .nr X 1
+          .nr Y 0
+          .\" This does not work as expected
+          .if (\n[X])&(!\n[Y]) .nop X only
+          .
+          .\" Use this construct instead
+          .if (\n[X]=1)&(\n[Y]=0) .nop X only
 
    * Extrema: `>?' (maximum), `<?' (minimum).
 
@@ -4476,12 +4529,47 @@ Define or set registers using the `nr' request or the `\R' escape.
      other words, it vanishes completely after `gtroff' has processed
      it.
 
-   For example, the following two lines are equivalent:
+     For example, the following two lines are equivalent:
 
 
-     .nr a (((17 + (3 * 4))) % 4)
-     \R'a (((17 + (3 * 4))) % 4)'
-         => 1
+          .nr a (((17 + (3 * 4))) % 4)
+          \R'a (((17 + (3 * 4))) % 4)'
+              => 1
+
+     Note that the complete transparency of `\R' can cause surprising
+     effects if you use number registers like `.k' which get evaluated
+     at the time they are accessed.
+
+
+          .ll 1.6i
+          .
+          aaa bbb ccc ddd eee fff ggg hhh\R':k \n[.k]'
+          .tm :k == \n[:k]
+              => :k == 126950
+          .
+          .br
+          .
+          aaa bbb ccc ddd eee fff ggg hhh\h'0'\R':k \n[.k]'
+          .tm :k == \n[:k]
+              => :k == 15000
+
+     If you process this with the PostScript device (`-Tps'), there
+     will be a line break eventually after `ggg' in both input lines.
+     However, after processing the space after `ggg', the partially
+     collected line is not overfull yet, so `troff' continues to
+     collect input until it sees the space (or in this case, the
+     newline) after `hhh'.  At this point, the line is longer than the
+     line length, and the line gets broken.
+
+     In the first input line, since the `\R' escape leaves no traces,
+     the check for the overfull line hasn't been done yet at the point
+     where `\R' gets handled, and you get a value for the `.k' number
+     register which is even greater than the current line length.
+
+     In the second input line, the insertion of `\h'0'' to emit an
+     invisible zero-width space forces `troff' to check the line length
+     which in turn causes the start of a new output line.  Now `.k'
+     returns the expected value.
 
    Both `nr' and `\R' have two additional special forms to increment or
 decrement a register.
@@ -4729,6 +4817,10 @@ read-only.  A complete listing of all built-in registers can be found in
 
 `\n[.H]'
      Horizontal resolution in basic units.
+
+`\n[.R]'
+     The number of number registers available.  This is always 10000 in
+     GNU `troff'; it exists for backward compatibility.
 
 `\n[.U]'
      If `gtroff' is called with the `-U' command line option to
@@ -5245,7 +5337,9 @@ Here a description of requests which influence hyphenation.
      the current list of patterns.  Its arguments are pairs of
      character codes - integers from 0 to 255.  The request maps
      character code A to code B, code C to code D, and so on.  You can
-     use character codes which would be invalid otherwise.
+     use character codes which would be invalid otherwise.  By default,
+     everything maps to itself except letters `A' to `Z' which map to
+     `a' to `z'.
 
      The set of hyphenation patterns is associated with the current
      language set by the `hla' request.  The `hpf' request is usually
@@ -5935,7 +6029,7 @@ can be changed with the `cc' and `c2' requests, respectively.
               => foo bar
 
      The first backslash is consumed while the macro is read, and the
-     second is swallowed while exexuting macro `foo'.
+     second is swallowed while executing macro `foo'.
 
    A "translation" is a mapping of an input character to an output
 glyph.  The mapping occurs at output time, i.e., the input character
@@ -6581,6 +6675,7 @@ also at least one symbol font which contains various special symbols
 * Font Families::
 * Font Positions::
 * Using Symbols::
+* Character Classes::
 * Special Fonts::
 * Artificial Fonts::
 * Ligatures and Kerning::
@@ -6886,7 +6981,7 @@ forms to access font positions.
      *Note Changing Fonts::, for the standard syntax form.
 
 
-File: groff.info,  Node: Using Symbols,  Next: Special Fonts,  Prev: Font Positions,  Up: Fonts and Symbols
+File: groff.info,  Node: Using Symbols,  Next: Character Classes,  Prev: Font Positions,  Up: Fonts and Symbols
 
 5.17.4 Using Symbols
 --------------------
@@ -7132,7 +7227,9 @@ is called "groff glyph list (GGL)".
      can be modified with the `cflags' request.  The first argument is
      the sum of the desired flags and the remaining arguments are the
      characters or symbols to have those properties.  It is possible to
-     omit the spaces between the characters or symbols.
+     omit the spaces between the characters or symbols.  Instead of
+     single characters or symbols you can also use character classes
+     (see *note Character Classes:: for more details).
 
     `1'
           The character ends sentences (initially characters `.?!' have
@@ -7186,6 +7283,30 @@ is called "groff glyph list (GGL)".
           solution instead of changing the `cflags' value is to insert
           `\:' right after the hyphen at the places which really need a
           break point.
+
+    `128'
+          Prohibit a line break before the character, but allow a line
+          break after the character.  This works only in combination
+          with flags 256 and 512 (see below) and has no effect
+          otherwise.
+
+    `256'
+          Prohibit a line break after the character, but allow a line
+          break before the character.  This works only in combination
+          with flags 128 and 512 (see below) and has no effect
+          otherwise.
+
+    `512'
+          Allow line break before or after the character.  This works
+          only in combination with flags 128 and 256 and has no effect
+          otherwise.
+
+          Contrary to flag values 2 and 4, the flags 128, 256, and 512
+          work pairwise.  If, for example, the left character has value
+          512, and the right character 128, no line break gets
+          inserted.  If we use value 6 instead for the left character,
+          a line break after the character can't be suppressed since
+          the right neighbour character doesn't get examined.
 
  -- Request: .char g [string]
  -- Request: .fchar g [string]
@@ -7279,9 +7400,78 @@ width, depth, and height, nothing else.  All manipulations with the
    (4) `char' is a misnomer since an output glyph is defined.
 
 
-File: groff.info,  Node: Special Fonts,  Next: Artificial Fonts,  Prev: Using Symbols,  Up: Fonts and Symbols
+File: groff.info,  Node: Character Classes,  Next: Special Fonts,  Prev: Using Symbols,  Up: Fonts and Symbols
 
-5.17.5 Special Fonts
+5.17.5 Character Classes
+------------------------
+
+Classes are particularly useful for East Asian languages such as
+Chinese, Japanese, and Korean, where the number of needed characters is
+much larger than in European languages, and where large sets of
+characters share the same properties.
+
+ -- Request: .class n c1 c2 ...
+     In `groff', a "character class" (or simply "class") is a set of
+     characters, grouped by some user aspect.  The `class' request
+     defines such classes so that other requests can refer to all
+     characters belonging to this set with a single class name.
+     Currently, only the `cflags' request can handle character classes.
+
+     A `class' request takes a class name followed by a list of
+     entities.  In its simplest form, the entities are characters or
+     symbols:
+
+
+          .class [prepunct] , : ; > }
+
+     Since class and glyph names share the same namespace, it is
+     recommended to start and end the class name with `[' and `]',
+     respectively, to avoid collisions with normal `groff' symbols (and
+     symbols defined by the user).  In particular, the presence of `]'
+     in the symbol name intentionally prevents the usage of `\[...]',
+     thus you must use the `\C' escape to access a class with such a
+     name.
+
+     You can also use a special character range notation, consisting of
+     a start character or symbol, followed by `-', and an end character
+     or symbol.  Internally, `gtroff' converts these two symbol names to
+     Unicode values (according to the groff glyph gist) which then give
+     the start and end value of the range.  If that fails, the class
+     definition is skipped.
+
+     Finally, classes can be nested, too.
+
+     Here is a more complex example:
+
+
+          .class [prepunctx] \C'[prepunct]' \[u2013]-\[u2016]
+
+     The class `prepunctx' now contains the contents of the class
+     `prepunct' as defined above (the set `, : ; > }'), and characters
+     in the range between `U+2013' and `U+2016'.
+
+     If you want to add `-' to a class, it must be the first character
+     value in the argument list, otherwise it gets misinterpreted as a
+     range.
+
+     Note that it is not possible to use class names within range
+     definitions.
+
+     Typical use of the `class' request is to control line-breaking and
+     hyphenation rules as defined by the `cflags' request.  For example,
+     to inhibit line breaks before the characters belonging to the
+     `prepunctx' class, you can write:
+
+
+          .cflags 2 \C'[prepunctx]'
+
+     See the `cflags' request in *note Using Symbols::, for more
+     details.
+
+
+File: groff.info,  Node: Special Fonts,  Next: Artificial Fonts,  Prev: Character Classes,  Up: Fonts and Symbols
+
+5.17.6 Special Fonts
 --------------------
 
 Special fonts are those that `gtroff' searches when it cannot find the
@@ -7314,7 +7504,7 @@ searching mechanism in `gtroff'.
 
 File: groff.info,  Node: Artificial Fonts,  Next: Ligatures and Kerning,  Prev: Special Fonts,  Up: Fonts and Symbols
 
-5.17.6 Artificial Fonts
+5.17.7 Artificial Fonts
 -----------------------
 
 There are a number of requests and escapes for artificially creating
@@ -7450,7 +7640,7 @@ separate programs.  Most of them are no longer necessary in GNU
 
 File: groff.info,  Node: Ligatures and Kerning,  Prev: Artificial Fonts,  Up: Fonts and Symbols
 
-5.17.7 Ligatures and Kerning
+5.17.8 Ligatures and Kerning
 ----------------------------
 
 Ligatures are groups of characters that are run together, i.e, producing
@@ -8165,8 +8355,8 @@ File: groff.info,  Node: Operators in Conditionals,  Next: if-else,  Prev: Condi
 5.20.1 Operators in Conditionals
 --------------------------------
 
-In `if', `ie', and `while' requests, there are several more operators
-available:
+In `if', `ie', and `while' requests, in addition to ordinary *note
+Expressions::, there are several more operators available:
 
 `e'
 `o'
@@ -8306,7 +8496,7 @@ formatting can be painful.
      of the line) if EXPR evaluates to a value greater than zero
      (true).  ANYTHING is interpreted as though it was on a line by
      itself (except that leading spaces are swallowed).  *Note
-     Expressions::, for more info.
+     Operators in Conditionals::, for more info.
 
 
           .nr xxx 1
@@ -8430,324 +8620,6 @@ is used much like the `if' (and related) requests.
      restarting the next iteration.
 
    *Note Expressions::.
-
-
-File: groff.info,  Node: Writing Macros,  Next: Page Motions,  Prev: Conditionals and Loops,  Up: gtroff Reference
-
-5.21 Writing Macros
-===================
-
-A "macro" is a collection of text and embedded commands which can be
-invoked multiple times.  Use macros to define common operations.  *Note
-Strings::, for a (limited) alternative syntax to call macros.
-
- -- Request: .de name [end]
- -- Request: .de1 name [end]
- -- Request: .dei name [end]
- -- Request: .dei1 name [end]
-     Define a new macro named NAME.  `gtroff' copies subsequent lines
-     (starting with the next one) into an internal buffer until it
-     encounters the line `..' (two dots).  The optional second argument
-     to `de' changes this to a macro to `.END'.
-
-     There can be whitespace after the first dot in the line containing
-     the ending token (either `.' or macro `END').  Don't insert a tab
-     character immediately after the `..', otherwise it isn't
-     recognized as the end-of-macro symbol.(1) (*note Writing
-     Macros-Footnote-1::)
-
-     Here a small example macro called `P' which causes a break and
-     inserts some vertical space.  It could be used to separate
-     paragraphs.
-
-
-          .de P
-          .  br
-          .  sp .8v
-          ..
-
-     The following example defines a macro within another.  Remember
-     that expansion must be protected twice; once for reading the macro
-     and once for executing.
-
-
-          \# a dummy macro to avoid a warning
-          .de end
-          ..
-          .
-          .de foo
-          .  de bar end
-          .    nop \f[B]Hallo \\\\$1!\f[]
-          .  end
-          ..
-          .
-          .foo
-          .bar Joe
-              => Hallo Joe!
-
-     Since `\f' has no expansion, it isn't necessary to protect its
-     backslash.  Had we defined another macro within `bar' which takes a
-     parameter, eight backslashes would be necessary before `$1'.
-
-     The `de1' request turns off compatibility mode while executing the
-     macro.  On entry, the current compatibility mode is saved and
-     restored at exit.
-
-
-          .nr xxx 12345
-          .
-          .de aa
-          The value of xxx is \\n[xxx].
-          ..
-          .de1 bb
-          The value of xxx ix \\n[xxx].
-          ..
-          .
-          .cp 1
-          .
-          .aa
-              => warning: number register `[' not defined
-              => The value of xxx is 0xxx].
-          .bb
-              => The value of xxx ix 12345.
-
-     The `dei' request defines a macro indirectly.  That is, it expands
-     strings whose names are NAME or END before performing the append.
-
-     This:
-
-
-          .ds xx aa
-          .ds yy bb
-          .dei xx yy
-
-     is equivalent to:
-
-
-          .de aa bb
-
-     The `dei1' request is similar to `dei' but with compatibility mode
-     switched off during execution of the defined macro.
-
-     If compatibility mode is on, `de' (and `dei') behave similar to
-     `de1' (and `dei1'): A `compatibility save' token is inserted at
-     the beginning, and a `compatibility restore' token at the end,
-     with compatibility mode switched on during execution.  *Note
-     Gtroff Internals::, for more information on switching
-     compatibility mode on and off in a single document.
-
-     Using `trace.tmac', you can trace calls to `de' and `de1'.
-
-     Note that macro identifiers are shared with identifiers for
-     strings and diversions.
-
-     *Note the description of the `als' request: als, for possible
-     pitfalls if redefining a macro which has been aliased.
-
- -- Request: .am name [end]
- -- Request: .am1 name [end]
- -- Request: .ami name [end]
- -- Request: .ami1 name [end]
-     Works similarly to `de' except it appends onto the macro named
-     NAME.  So, to make the previously defined `P' macro actually do
-     indented instead of block paragraphs, add the necessary code to the
-     existing macro like this:
-
-
-          .am P
-          .ti +5n
-          ..
-
-     The `am1' request turns off compatibility mode while executing the
-     appended macro piece.  To be more precise, a "compatibility save"
-     input token is inserted at the beginning of the appended code, and
-     a "compatibility restore" input token at the end.
-
-     The `ami' request appends indirectly, meaning that `gtroff'
-     expands strings whose names are NAME or END before performing the
-     append.
-
-     The `ami1' request is similar to `ami' but compatibility mode is
-     switched off during execution of the defined macro.
-
-     Using `trace.tmac', you can trace calls to `am' and `am1'.
-
-   *Note Strings::, for the `als' and `rn' request to create an alias
-and rename a macro, respectively.
-
-   The `de', `am', `di', `da', `ds', and `as' requests (together with
-its variants) only create a new object if the name of the macro,
-diversion or string diversion is currently undefined or if it is
-defined to be a request; normally they modify the value of an existing
-object.
-
- -- Request: .return [anything]
-     Exit a macro, immediately returning to the caller.
-
-     If called with an argument, exit twice, namely the current macro
-     and the macro one level higher.  This is used to define a wrapper
-     macro for `return' in `trace.tmac'.
-
-* Menu:
-
-* Copy-in Mode::
-* Parameters::
-
-
-File: groff.info,  Node: Writing Macros-Footnotes,  Up: Writing Macros
-
-   (1) While it is possible to define and call a macro `.' with
-
-
-     .de .
-     .  tm foo
-     ..
-     .
-     ..    \" This calls macro `.'!
-
-you can't use this as the end-of-macro macro: during a macro definition,
-`..' is never handled as a call to `.', even if you say `.de foo .'
-explicitly.
-
-
-File: groff.info,  Node: Copy-in Mode,  Next: Parameters,  Prev: Writing Macros,  Up: Writing Macros
-
-5.21.1 Copy-in Mode
--------------------
-
-When `gtroff' reads in the text for a macro, string, or diversion, it
-copies the text (including request lines, but excluding escapes) into
-an internal buffer.  Escapes are converted into an internal form, except
-for `\n', `\$', `\*', `\\' and `\<RET>' which are evaluated and
-inserted into the text where the escape was located.  This is known as
-"copy-in" mode or "copy" mode.
-
-   What this means is that you can specify when these escapes are to be
-evaluated (either at copy-in time or at the time of use) by insulating
-the escapes with an extra backslash.  Compare this to the `\def' and
-`\edef' commands in TeX.
-
-   The following example prints the numbers 20 and 10:
-
-
-     .nr x 20
-     .de y
-     .nr x 10
-     \&\nx
-     \&\\nx
-     ..
-     .y
-
-
-File: groff.info,  Node: Parameters,  Prev: Copy-in Mode,  Up: Writing Macros
-
-5.21.2 Parameters
------------------
-
-The arguments to a macro or string can be examined using a variety of
-escapes.
-
- -- Register: \n[.$]
-     The number of arguments passed to a macro or string.  This is a
-     read-only number register.
-
-     Note that the `shift' request can change its value.
-
-   Any individual argument can be retrieved with one of the following
-escapes:
-
- -- Escape: \$n
- -- Escape: \$(nn
- -- Escape: \$[nnn]
-     Retrieve the Nth, NNth or NNNth argument.  As usual, the first
-     form only accepts a single number (larger than zero), the second a
-     two-digit number (larger or equal to 10), and the third any
-     positive integer value (larger than zero).  Macros and strings can
-     have an unlimited number of arguments.  Note that due to copy-in
-     mode, use two backslashes on these in actual use to prevent
-     interpolation until the macro is actually invoked.
-
- -- Request: .shift [n]
-     Shift the arguments 1 position, or as many positions as specified
-     by its argument.  After executing this request, argument I becomes
-     argument I-N; arguments 1 to N are no longer available.  Shifting
-     by negative amounts is currently undefined.
-
-     The register `.$' is adjusted accordingly.
-
- -- Escape: \$*
- -- Escape: \$@
-     In some cases it is convenient to use all of the arguments at once
-     (for example, to pass the arguments along to another macro).  The
-     `\$*' escape concatenates all the arguments separated by spaces.
-     A similar escape is `\$@', which concatenates all the arguments
-     with each surrounded by double quotes, and separated by spaces.
-     If not in compatibility mode, the input level of double quotes is
-     preserved (see *note Request and Macro Arguments::).
-
- -- Escape: \$^
-     Handle the parameters of a macro as if they were an argument to the
-     `ds' or similar requests.
-
-
-          .de foo
-          .  tm $1=`\\$1'
-          .  tm $2=`\\$2'
-          .  tm $*=`\\$*'
-          .  tm $@=`\\$@'
-          .  tm $^=`\\$^'
-          ..
-          .foo " This is a "test"
-              => $1=` This is a '
-              => $2=`test"'
-              => $*=` This is a  test"'
-              => $@=`" This is a " "test""'
-              => $^=`" This is a "test"'
-
-     This escape is useful mainly for macro packages like `trace.tmac'
-     which redefines some requests and macros for debugging purposes.
-
- -- Escape: \$0
-     The name used to invoke the current macro.  The `als' request can
-     make a macro have more than one name.
-
-     If a macro is called as a string (within another macro), the value
-     of `\$0' isn't changed.
-
-
-          .de foo
-          .  tm \\$0
-          ..
-          .als foo bar
-          .
-
-
-          .de aaa
-          .  foo
-          ..
-          .de bbb
-          .  bar
-          ..
-          .de ccc
-          \\*[foo]\\
-          ..
-          .de ddd
-          \\*[bar]\\
-          ..
-          .
-
-
-          .aaa
-              => foo
-          .bbb
-              => bar
-          .ccc
-              => ccc
-          .ddd
-              => ddd
-
-
-   *Note Request and Macro Arguments::.
 
 
 

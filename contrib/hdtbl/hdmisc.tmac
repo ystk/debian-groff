@@ -5,7 +5,7 @@ hdmisc.tmac
 
 This file is part of groff, the GNU roff type-setting system.
 
-Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -26,7 +26,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .
 .\" %beginstrip%
 .
-.if d getarg \
+.if d t*getarg \
 .  nx
 .
 .
@@ -68,7 +68,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .\"
 .\"		sets string `ddd' to value `=', and `args' contains
 .\"		`aaa=xxx bbb eee'.
-.de getarg
+.de t*getarg
 .  ds \\$1
 .  ds args
 .
@@ -145,13 +145,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .
 .\"	Utility macro:	.index <string1> <string2>
 .\"
-.\"		Check whether <string2> is a substring of <string2> and
-.\"		return its position in number register `index', starting
+.\"		Check whether <string2> is a substring of <string1> and
+.\"		return its position in number register `t*index', starting
 .\"		with 1.  If not found, return 0.  If <string2> is empty,
-.\"		set `index' to -999.
-.de index
+.\"		set `t*index' to -999.
+.de t*index
 .  if "\\$2"" \{\
-.    nr index -999
+.    nr t*index -999
 .    return
 .  \}
 .
@@ -168,23 +168,23 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .  \}
 .
 .  ie (\\n[*] == \\n[**]) \
-.    nr index 0
+.    nr t*index 0
 .  el \
-.    nr index (\\n[*] + 1)
+.    nr t*index (\\n[*] + 1)
 ..
 .
 .
 .\"	******************************************************************
-.\"	********	non-accumulating space .SP [v]		**********
+.\"	********	non-accumulating space .t*SP [v]	**********
 .\"	**                                                              **
 .\"	**	nl vor erster Seite -1, oben auf Seite 0 resp. tH	**
 .\"	**	.k nach .sp oder .br 0,					**
 .\"	**		sonst Laenge der angefangenen Zeile		**
-.\"	**	Der Merker M# fuer vorangegangenes .SP wird in .HM am	**
+.\"	**	Der Merker M# fuer vorangegangenes .t*SP wird in .HM am	**
 .\"	**	Seitenanfang zurueckgesetzt.				**
 .\"	**	ganz richtig ist .sp + .br = .br + .sp = .sp		**
 .\"	******************************************************************
-.de SP
+.de t*SP
 .  if (\\n[nl] < 0) \
 .    br			\"	start very first page
 .  nr * \\n[.p]		\"	save current page length
@@ -194,7 +194,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .  el \
 .    pl +\\$1		\"	otherwise use \\$1
 .
-.  nr ** (\\n[.p] - \\n[*])	\" ** now holds arg for .SP in base units
+.  nr ** (\\n[.p] - \\n[*])	\" ** now holds arg for .t*SP in base units
 .  pl \\n[*]u		\"	restore page length
 .
 .  \" we do nothing at start of new page or column
@@ -205,7 +205,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .    \}
 .    el \{\
 .      if (\\n[**] - \\n[S#]) \{\
-.        sp (\\n[**]u - \\n[S#]u)\"	emit difference to previous .SP
+.        sp (\\n[**]u - \\n[S#]u)\"	emit difference to previous .t*SP
 .        nr S# \\n[**]	\"	store ** in S#
 .    \}\}
 .
@@ -218,7 +218,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .\"	**		Perform all arguments once			**
 .\"	**			P1 is nestable				**
 .\"	******************************************************************
-.de P1
+.de t*P1
 .  \" `while' command is about five times faster than recursion!
 .  while \\n[.$] \{\
 .    nop \\$1
@@ -229,22 +229,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .
 .\"	******************************************************************
 .\"	**	Hilfsmakro zum Einstellen von Schriftgroesse und	**
-.\"	**	Zeilenabstand, bezogen auf Anfangswerte \n[s] und \n[v]	**
-.\"	**	sowie fuer Hyphenation:					**
+.\"	**	Zeilenabstand, bezogen auf Anfangswerte \n[t*s]		**
+.\"	**	und \n[t*v] sowie fuer Hyphenation:			**
 .\"	**		.pv s v hy# hart;  macht .br			**
 .\"	**	Bei 4. Argument setzen der Register s und v und hy.	**
 .\"	**	Fuer angefangene Zeile die vorgefundenen Einstellungen	**
+.\"	**								**
+.\"	**   Auxiliary macro to set internal registers for font size	**
+.\"	**   and line spacing, relative to initial values \n[t*s] and	**
+.\"	**   \n[t*v]. Optionally sets hyphenation. A fourth argument	**
+.\"	**   initializes internal registers to global default values.	**
 .\"	******************************************************************
-.de pv
+.de t*pv
 .  br
 .
 .  if \\n[.$] \
-.    ps (\\n[s]u * \\$1z / 1z)
+.    ps (\\n[t*s]u * \\$1z / 1z)
 .
 .  ie (\\n[.$] - 1) \
-.    vs (\\n[v]u * \\$2p / 1p)
+.    vs (\\n[t*v]u * \\$2p / 1p)
 .  el \{\
-.    vs (\\n[v]u * \\$1p / 1p)
+.    vs (\\n[t*v]u * \\$1p / 1p)
 .    return
 .  \}
 .
@@ -252,9 +257,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .    hy \\$3
 .
 .  if !""\\$4" \{\
-.    nr v \\n[.v]
-.    nr s \\n[.ps]
-.    nr hy \\n[.hy]
+.    nr t*v \\n[.v]
+.    nr t*s \\n[.ps]
+.    nr t*hy \\n[.hy]
 .  \}
 ..
 .
@@ -289,9 +294,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .
 .
 .\"	******************************************************************
-.\"	**		processs diversion				**
+.\"	**		process diversion				**
 .\"	******************************************************************
-.de DI
+.de t*DI
 .  nr * \\n[.u]
 .  nf		\"	diversion is already formatted - output it unchanged
 .  \\$1		\"	output the diversion ...
@@ -300,298 +305,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .    fi		\"	reactivate formatting
 ..
 .
-.
 .\"	******************************************************************
-.\"	**	Some macros and the page setup used by the examples	**
+.\"	**		error checking at end				**
 .\"	******************************************************************
-.
-.\"	******************************************************************
-.\"	**	some of the following macros use system commands	**
-.\"	**	and are therefore `unsafe': they need the `-U' argument **
-.\"	**	when calling groff/troff				**
-.\"	******************************************************************
-.
-.\"	******************************************************************
-.\"	**		Header macro for the examples			**
-.\"	******************************************************************
-.de H
-.  nr *w* (17 * \w\\$* / 10 + 4n)
-.  TBL border=1n \
-       bc=yellow \
-       bgc=red4 \
-       fgc=yellow \
-       csp=0 \
-       fst=TB \
-       "fsz=1.7 1.5" \
-       hal=c \
-       tal=c \
-       "width=(\\n[*w*]+4n)<?\n[.l]"
-.  TR .TD
-.  P1 \\$*
-.  ETB
-.  SP
-..
-.
-.
-.\"	******************************************************************
-.\"	**	Utility macro for the date, requires UNIX date.		**
-.\"	**	after return string *date contains the date in the	**
-.\"	**	standard form of the Unix date-command,			**
-.\"	**	for example "Sun Dec  5 22:27:57     2004"		**
-.\"	******************************************************************
-.de date
-.  pso bash -c "echo -n .ds *date\ ;date"
-.  tm \\*[*date] ***
-..
-.
-.
-.\"	******************************************************************
-.\"	**	Utility macro for time measurement, requires UNIX date	**
-.\"	**	.time s[tart]|[end]					**
-.\"	**		.time start:					**
-.\"	**			reg *time gets the start-time (seconds) **
-.\"	**		.time [end]:					**
-.\"	**			reg *time gets the difference of the	**
-.\"	**				end- and start-time (seconds)	**
-.\"	******************************************************************
-.de time
-.  ds * \\$1\"
-.  substring * 0 0
-.  ie "\\*[*]"s" \
-.    pso bash -c "echo -n .nr *time 0+;date +%s"
-.  el \{\
-.   pso bash -c "echo -n .nr *time -;date +%s"
-.   nr *time 0-\\n[*time]
-.   tm elapsed time: \\n[*time] seconds
-.  \}
-..
-.
-.
-.\"	******************************************************************
-.\"	**		Perform n-times all the arbitrary arguments	**
-.\"	**		.PN n a2 a3 ...					**
-.\"	**			PN is nestable				**
-.\"	******************************************************************
-.de PN
-.  nr *pn +1
-.  nr PN\\n[*pn] (\\$1 + 1) 1
-.  shift
-.
-.  while \\n-[PN\\n[*pn]] \
-.    P1 \\$@
-.
-.  nr *pn -1
-..
-.
-.
-.\"	Utility macro:	.d2x decimal_number [base [string_name]]
-.\"
-.\"		Convert `decimal_number' to another base `base' (in the
-.\"		range 1..16) and store the result in string `string_name'.
-.\"		If `base' is missing or empty, convert to a hexadecimal
-.\"		number.  If `string_name' is missing or empty, return value
-.\"		in string `hex#', otherwise return the value in both
-.\"		`string_name' and `hex#'.
-.\"
-.\"		The base value 1 is handled specially: The returned
-.\"		string contains the character `|' `decimal_number' times
-.\"		(for example, input value 4 yields `||||').
-.ds d2x-0 0\"
-.ds d2x-1 1\"
-.ds d2x-2 2\"
-.ds d2x-3 3\"
-.ds d2x-4 4\"
-.ds d2x-5 5\"
-.ds d2x-6 6\"
-.ds d2x-7 7\"
-.ds d2x-8 8\"
-.ds d2x-9 9\"
-.ds d2x-10 A\"
-.ds d2x-11 B\"
-.ds d2x-12 C\"
-.ds d2x-13 D\"
-.ds d2x-14 E\"
-.ds d2x-15 F\"
-.
-.
-.de d2x
-.  if !\B\\$1 \{\
-.    tm \\n[.F]:\\n[.c]: invalid or missing first argument
-.    tm1 "     usage: `.d2x decimal_number [base [string_name]]'
-.    return
-.  \}
-.
-.  nr i# (-1) 1
-.  nr j# 1
-.  ds hex#
-.  nr dec# (\\$1) 1
-.
-.  if !\\$1 \
-.    nr dec# (-\\n[dec#])
-.
-.  ie !"\\$2"" \{\
-.    ie !\B\\$2 \
-.      tm \\n[.F]:\\n[.c]: invalid base `\\$2'
-.    el \
-.      ie ((\\$2 < 1) : (\\$2 > 16)) \
-.        tm \\n[.F]:\\n[.c]: invalid base `\\$2'
-.      el \
-.        nr b# \\$2
-.  \}\}
-.  el \
-.    nr b# 16
-.
-.  nr xb# 1
-.
-.  ie (\\n[b#] == 1) \{\
-.    nr dec# +1
-.    while \\n-[dec#] \
-.      as hex# |\"
-.  \}
-.  el \{\
-.    while (\\n[dec#] - \\n[xb#]) \{\
-.      nr xb# (\\n[xb#] * \\n[b#])
-.      nr j# +1
-.    \}
-.
-.    while (\\n+[i#] < \\n[j#]) \{\
-.      nr ** (\\n[dec#] / \\n[xb#])
-.      as hex# \\*[d2x-\\n[**]]\"
-.      nr dec# (\\n[dec#] - (\\n[xb#] * \\n[**]))
-.      nr xb# (\\n[xb#] / \\n[b#])
-.    \}
-.  \}
-.
-.  \" strip leading zero, if any
-.  ds * \\*[hex#]\"
-.  substring * 0 0
-.  if "\\*[*]"0" \
-.    substring hex# 1 -1
-.
-.  if (\\$1 < 0) \
-.    ds hex# -\\*[hex#]\"
-.
-.  if !"\\$3"" \{\
-.    ie !\A\\$3 \
-.      tm \\n[.F]:\\n[.c]: invalid string name `\\$3'
-.    el \
-.      ds \\$3 \\*[hex#]\"
-.  \}
-..
-.
-.
-.\"	Utility macro:	.random#
-.\"			.random-seed seed1 seed2
-.\"
-.\"		Return pseudo-random numbers in the range 0..0xFFFFFF,
-.\"		represented as the concatenation of `#' and six
-.\"		hexadecimal digits, in the string `#random'.  The
-.\"		macro `random-seed' can be used to set seed values,
-.\"		which should be integers in the range 1..2147483562 and
-.\"		1..2147483398 for `seed1' and `seed2', respectively
-.\"		(the macro applies a modulo operation to assure this
-.\"		range).  If `random-seed' isn't called the registers
-.\"		`seconds', `minutes', `hours', `dy', `mo', `year', and
-.\"		`$$' are used to compute it.
-.\"
-.\"		The used generator is presented in L'Ecuyer's 1988 paper
-.\"		`Efficient and Portable Combined Random Number
-.\"		Generators', which combines two Multiplicative Linear
-.\"		Congruential Generators (MLCGs) to achieve a period of
-.\"		2.3*10^18.
-.af hours 00
-.af minutes 00
-.af seconds 00
-.af year 0000
-.af mo 00
-.af dy 00
-.
-.ds random-s1 \n[minutes]\n[seconds]\n[$$]\n[hours]\"
-.\" prevent overflow
-.substring random-s1 0 8
-.
-.nr random-s1 (\*[random-s1] % 2147483562)
-.nr random-s2 \n[dy]\n[year]\n[mo]
-.
-.
-.de random-seed
-.  if !(\\n[.$] == 2) \{\
-.    tm1 "random-seed: Invalid number of arguments.
-.    tm1 "             usage: `.random-seed seed1 seed2'
-.    return
-.  \}
-.
-.  nr random-s1 (\\$1 % 2147483562)
-.  nr random-s2 (\\$2 % 2147483398)
-..
-.
-.
-.de random#
-.  nr * (\\n[random-s1] / 53668)
-.  nr random-s1 (40014 * (\\n[random-s1] - (\\n[*] * 53668)) \
-                - (\\n[*] * 12211))
-.  if !\\n[random-s1] \
-.    nr random-s1 +2147483563
-.
-.  nr * (\\n[random-s2] / 52774)
-.  nr random-s2 (40692 * (\\n[random-s2] - (\\n[*] * 52774)) \
-                - (\\n[*] * 3791))
-.  if !\\n[random-s2] \
-.    nr random-s2 +2147483399
-.
-.  nr * (\\n[random-s1] - \\n[random-s2])
-.  if (\\n[*] < 1) \
-.    nr * +2147483562
-.
-.  \" reduce the result to the leftmost 24 bits
-.  nr * (\\n[*] / 128)
-.
-.  d2x \\n[*]
-.  ds hex# 000000\\*[hex#]\"
-.  substring hex# -6
-.  ds #random #\\*[hex#]\"
-..
-.
-.
-.\"	******************************************************************
-.\"	**			minimal Page setup			**
-.\"	******************************************************************
-.
-.nr s \n[.ps]
-.nr v \n[.v]
-.pv 1.2 1.2 "" X
-.nr l 6.6i				\"	set text width
-.ll \n[l]u
-.nr o 2c				\"	set offset
-.po \n[o]u
-.nr p 29.7c				\"	set paper length (A4)
-.pl \n[p]u
-.nr tH 1i				\"	set top margin
-.sp |\n[tH]u
-.
-.ev 99
-.lt \n[l]u
-.ev
-.
-.
-.de HM
-.  sp |.5i				\"	print header in top margin
-.  tl \\*[t*HM]
-.  sp |\\n[tH]u
-.  ev
-..
-.
-.
-.de BM
-.  ev 99
-.  sp |(\\n[p]u - .5i)			\"	print footer in bottom margin
-.  tl \\*[t*BM]
-.  bp
-..
-.
-.
-.de EM
-.  rm BM			\"	no page number at bottom of last page
+.de t*EM
 .
 .  if !"\\*[t*kept]"" \{\
 .    tm1 "hdtbl: Not all tables have been printed.
@@ -602,17 +319,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .    tm1 "       Add `.t*free' at the end of your document.
 .  \}
 .  if \\n[t*#] \
-.    tm hdtbl: Missing `.ETB' macro at end of document.
+.    tm hdtbl: Missing `.ETB' macro; last .TBL in \\*[t*FN] at line \\*[t*LN].
 ..
-.
-.
-.em EM
-.
-.if "\n[.m]"" \
-.  gcolor black
-.if "\n[.M]"" \
-.  fcolor white
-.
-.mso hdtbl.tmac\"			load table macros
 .
 .\" EOF

@@ -1,9 +1,29 @@
-    Copyright 2004, 2005, 2006, 2007, 2008, 2009
+    Copyright 2004, 2005, 2006, 2007, 2008, 2009, 2010
       Free Software Foundation, Inc.
 
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved.
+
+Release 1.6
+-----------
+Complete overhaul of refer handling.  If you've been using mom and
+refer, the changes may affect documents you've already created.
+Please read refer.html.
+
+Improved underlining thanks to Tadziu Hoffman.
+
+Increased flexibility of PRINTSTYLE TYPEWRITE, which now allows
+user to choose the monospace family and point size.
+
+Release 1.5-e
+-------------
+Complete overhaul of documentation
+
+Release 1.5-d
+-------------
+Control macros added to various miscellaneous docprocessing
+functions
 
 Release 1.5-c
 -------------

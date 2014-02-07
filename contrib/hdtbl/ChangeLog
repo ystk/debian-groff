@@ -1,3 +1,71 @@
+2010-02-09  Werner LEMBEARG  <wl@gnu.org>
+
+	Make example compilation work again if srcdir != builddir.
+
+	* Makefile.sub (.roff.ps): Define `sopath' groff string.
+
+	* examples/*.roff, examples/*.in: Use it so that .so finds its input
+	file.
+
+2010-02-08  Werner LEMBEARG  <wl@gnu.org>
+
+	Fix handling of `common.roff'.
+
+	* Makefile.sub (MOSTLYCLEANADD): Don't handle `common.roff'.
+	(EXAMPLEFILES): Handle `common.roff'.
+
+2010-02-08  Larry Kollar  <kollar@alltel.net>
+
+	Fix last patch and use `t*' prefix for all non-public stuff.
+	Other minor fixes.
+
+	* hdmisc.tmac (getarg, index, SP, P1, \n[s], \n[v], \n[hy], pv, DI):
+	Rename to...
+	(t*getarg, t*index, t*SP, t*P1, \n[t*s], \n[t*v], \n[t*hy], t*pv,
+	t*DI): This.
+	Update all callers.
+	(t*EM): New auxiliary macro (using stuff from
+	`examples/common.roff'.
+
+	* hdtbl.tmac (\n[t*v], \n[t*s], \n[t*hy], \n[t*l]): Initialize.
+	(\n[t*FN], \n[t*LN]): New number registers.
+
+	* examples/*.roff: Updated.
+	* examples/common.roff: Load `hdtbl.tmac' earlier.
+	Reinstall `HM' and `BM' traps.
+	Provide `SP' macros if not defined by other macro package.
+	(\n[p], \n[o]): Initialize.
+	(\*[t*HM], \*[t*BM]): Initialize.
+	(EM): Use `t*EM'.
+	Updated.
+
+	* examples/fonts_n.in, examples/fonts_x.in: Load
+	`examples/common.roff'.
+	Updated.
+
+	* groff_hdtbl.man: Document setup of default values.
+	Document `t*EM'.
+
+2010-01-23  Larry Kollar  <kollar@alltel.net>
+
+	Break out example formatting to a separate file.
+
+	* hdmisc.tmac: Move example formatting stuff to...
+	* examples/common.roff: This new file.
+
+	* hdtbl.tmac (HM, t*HM, BM, t*BM): Remove.
+
+	* examples/*.roff: Include `common.roff'.
+
+	* groff_hdtbl.man: Remove references to `HM' and `BM'.
+
+	* Makefile.sub: Handle `examples/common.roff'.
+
+2009-04-05  Joachim Walsdorff  <Joachim.Walsdorff@urz.uni-heidelberg.de>
+
+	* hdtbl.tmac (ETB, t*free): Correct two typos, fixing register
+	incrementation.
+
 2009-01-04  Werner LEMBERG  <wl@gnu.org>
 
 	* Makefile.sub (CLEANADD): Add hdmisc.tmac-s and hdtbl.tmac-s.
@@ -200,7 +268,7 @@
 	* Import of hdtbl 0.91 (with some further modifications).  Still
 	many rough edges.
 
-Copyright 2006, 2008, 2009
+Copyright 2006, 2008, 2009, 2010
   Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,

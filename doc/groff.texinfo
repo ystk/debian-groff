@@ -24,10 +24,10 @@
 
 
 @copying
-This manual documents GNU @code{troff} version 1.20.1.
+This manual documents GNU @code{troff} version 1.21.
 
 Copyright @copyright{} 1994-2000, 2001, 2002, 2003, 2004, 2005, 2006,
-2007, 2008, 2009
+2007, 2008, 2009, 2010
 Free Software Foundation, Inc.
 
 @quotation
@@ -473,8 +473,8 @@ developing GNU and promoting software freedom.''
 @titlepage
 @title groff
 @subtitle The GNU implementation of @code{troff}
-@subtitle Edition 1.20.1
-@subtitle Spring 2009
+@subtitle Edition 1.21
+@subtitle Winter 2010
 @author by Trent A.@tie{}Fisher
 @author and Werner Lemberg (@email{bug-groff@@gnu.org})
 
@@ -842,6 +842,9 @@ A free implementation of @code{grap}, a preprocessor for drawing graphs,
 can be obtained as an extra package; @code{groff} can use @code{grap}
 also.
 
+Unique to @code{groff} is the @code{preconv} preprocessor which enables
+@code{groff} to handle documents in various input encodings.
+
 There are other preprocessors in existence, but, unfortunately, no free
 implementations are available.  Among them are preprocessors for drawing
 mathematical pictures (@code{ideal}) and chemical structures
@@ -935,38 +938,40 @@ Similarly, we say @samp{gpic}, @samp{geqn}, etc.
 @pindex gtbl
 @pindex grefer
 @pindex gsoelim
+@pindex preconv
 @code{groff} normally runs the @code{gtroff} program and a postprocessor
 appropriate for the selected device.  The default device is @samp{ps}
 (but it can be changed when @code{groff} is configured and built).  It
 can optionally preprocess with any of @code{gpic}, @code{geqn},
-@code{gtbl}, @code{ggrn}, @code{grap}, @code{grefer}, or @code{gsoelim}.
+@code{gtbl}, @code{ggrn}, @code{grap}, @code{grefer}, @code{gsoelim}, or
+@code{preconv}.
 
 This section only documents options to the @code{groff} front end.  Many
 of the arguments to @code{groff} are passed on to @code{gtroff},
 therefore those are also included.  Arguments to pre- or postprocessors
 can be found in @ref{Invoking gpic}, @ref{Invoking geqn}, @ref{Invoking
 gtbl}, @ref{Invoking ggrn}, @ref{Invoking grefer}, @ref{Invoking
-gsoelim}, @ref{Invoking grotty}, @ref{Invoking grops}, @ref{Invoking
-grohtml}, @ref{Invoking grodvi}, @ref{Invoking grolj4}, @ref{Invoking
-grolbp}, and @ref{Invoking gxditview}.
+gsoelim}, @ref{Invoking preconv}, @ref{Invoking grotty}, @ref{Invoking
+grops}, @ref{Invoking grohtml}, @ref{Invoking grodvi}, @ref{Invoking
+grolj4}, @ref{Invoking grolbp}, and @ref{Invoking gxditview}.
 
 The command line format for @code{groff} is:
 
 @Example
-groff [ -abceghilpstvzCEGNRSUVXZ ] [ -F@var{dir} ] [ -m@var{name} ]
-      [ -T@var{def} ] [ -f@var{fam} ] [ -w@var{name} ] [ -W@var{name} ]
-      [ -M@var{dir} ] [ -d@var{cs} ] [ -r@var{cn} ] [ -n@var{num} ]
-      [ -o@var{list} ] [ -P@var{arg} ] [ -L@var{arg} ] [ -I@var{dir} ]
-      [ @var{files}@dots{} ]
+groff [ -abceghiklpstvzCEGNRSUVXZ ] [ -d@var{cs} ] [ -D@var{arg} ]
+      [ -f@var{fam} ] [ -F@var{dir} ] [ -I@var{dir} ] [ -K@var{arg} ]
+      [ -L@var{arg} ] [ -m@var{name} ] [ -M@var{dir} ] [ -n@var{num} ]
+      [ -o@var{list} ] [ -P@var{arg} ] [ -r@var{cn} ] [ -T@var{def} ]
+      [ -w@var{name} ] [ -W@var{name} ] [ @var{files}@dots{} ]
 @endExample
 
 The command line format for @code{gtroff} is as follows.
 
 @Example
-gtroff [ -abcivzCERU ] [ -w@var{name} ] [ -W@var{name} ] [ -d@var{cs} ]
-       [ -f@var{fam} ] [ -m@var{name} ] [ -n@var{num} ]
-       [ -o@var{list} ] [ -r@var{cn} ] [ -T@var{name} ]
-       [ -F@var{dir} ] [ -M@var{dir} ] [ @var{files}@dots{} ]
+gtroff [ -abcivzCERU ] [ -d@var{cs} ] [ -f@var{fam} ] [ -F@var{dir} ]
+       [ -m@var{name} ] [ -M@var{dir} ] [ -n@var{num} ] [ -o@var{list} ]
+       [ -r@var{cn} ] [ -T@var{name} ] [ -w@var{name} ] [ -W@var{name} ]
+       [ @var{files}@dots{} ]
 @endExample
 
 @noindent
@@ -985,14 +990,61 @@ Here's the description of the command-line options:
 
 @cindex command-line options
 @table @samp
-@item -h
-Print a help message.
+@item -a
+@cindex @acronym{ASCII} approximation output register (@code{.A})
+Generate an @acronym{ASCII} approximation of the typeset output.  The
+read-only register @code{.A} is then set to@tie{}1.  @xref{Built-in
+Registers}.  A typical example is
+
+@Example
+groff -a -man -Tdvi troff.man | less
+@endExample
+
+@noindent
+which shows how lines are broken for the DVI device.  Note that this
+option is rather useless today since graphic output devices are
+available virtually everywhere.
+
+@item -b
+Print a backtrace with each warning or error message.  This backtrace
+should help track down the cause of the error.  The line numbers given
+in the backtrace may not always be correct: @code{gtroff} can get
+confused by @code{as} or @code{am} requests while counting line numbers.
+
+@item -c
+Suppress color output.
+
+@item -C
+Enable compatibility mode.  @xref{Implementation Differences}, for the
+list of incompatibilities between @code{groff} and @acronym{AT&T}
+@code{troff}.
+
+@item -d@var{c}@var{s}
+@itemx -d@var{name}=@var{s}
+Define @var{c} or @var{name} to be a string@tie{}@var{s}.
+@var{c}@tie{}must be a one-letter name; @var{name} can be of arbitrary
+length.  All string assignments happen before loading any macro file
+(including the start-up file).
+
+@item -D@var{arg}
+Set default input encoding used by @code{preconv} to @var{arg}.  Implies
+@option{-k}.
 
 @item -e
 Preprocess with @code{geqn}.
 
-@item -t
-Preprocess with @code{gtbl}.
+@item -E
+Inhibit all error messages.
+
+@item -f@var{fam}
+Use @var{fam} as the default font family.  @xref{Font Families}.
+
+@item -F@var{dir}
+Search @file{@var{dir}} for subdirectories @file{dev@var{name}}
+(@var{name} is the name of the device), for the @file{DESC} file, and
+for font files before looking in the standard directories (@pxref{Font
+Directories}).  This option is passed to all pre- and postprocessors
+using the @env{GROFF_FONT_PATH} environment variable.
 
 @item -g
 Preprocess with @code{ggrn}.
@@ -1000,46 +1052,43 @@ Preprocess with @code{ggrn}.
 @item -G
 Preprocess with @code{grap}.
 
-@item -p
-Preprocess with @code{gpic}.
+@item -h
+Print a help message.
 
-@item -s
-Preprocess with @code{gsoelim}.
+@item -i
+Read the standard input after all the named input files have been
+processed.
 
-@item -c
-Suppress color output.
+@item -I@var{dir}
+This option may be used to specify a directory to search for files.
+It is passed to the following programs:
 
-@item -R
-Preprocess with @code{grefer}.  No mechanism is provided for passing
-arguments to @code{grefer} because most @code{grefer} options have
-equivalent commands which can be included in the file.  @xref{grefer},
-for more details.
+@itemize
+@item
+@code{gsoelim} (see @ref{gsoelim} for more details);
+it also implies @code{groff}'s @option{-s} option.
 
-@pindex troffrc
-@pindex troffrc-end
-Note that @code{gtroff} also accepts a @option{-R} option, which is not
-accessible via @code{groff}.  This option prevents the loading of the
-@file{troffrc} and @file{troffrc-end} files.
+@item
+@code{gtroff}; it is used to search files named in the @code{psbb} and
+@code{so} requests.
 
-@item -v
-Make programs run by @code{groff} print out their version number.
+@item
+@code{grops}; it is used to search files named in the
+@w{@code{\X'ps: import}} and @w{@code{\X'ps: file}} escapes.
+@end itemize
 
-@item -V
-Print the pipeline on @code{stdout} instead of executing it.  If
-specified more than once, print the pipeline on @code{stderr} and
-execute it.
+The current directory is always searched first.  This option may be
+specified more than once; the directories are searched in the order
+specified.  No directory search is performed for files specified using
+an absolute path.
 
-@item -z
-Suppress output from @code{gtroff}.  Only error messages are printed.
+@item -k
+Preprocess with @code{preconv}.  This is run before any other
+preprocessor.  Please refer to @code{preconv}'s manual page for its
+behaviour if no @option{-K} (or @option{-D}) option is specified.
 
-@item -Z
-Do not postprocess the output of @code{gtroff}.  Normally @code{groff}
-automatically runs the appropriate postprocessor.
-
-@item -P@var{arg}
-Pass @var{arg} to the postprocessor.  Each argument should be passed
-with a separate @option{-P} option.  Note that @code{groff} does not
-prepend @samp{-} to @var{arg} before passing it to the postprocessor.
+@item -K@var{arg}
+Set input encoding used by preconv to @var{arg}.  Implies @option{-k}.
 
 @item -l
 Send the output to a spooler for printing.  The command used for this is
@@ -1053,6 +1102,85 @@ separate @option{-L} option.  Note that @code{groff} does not prepend a
 @samp{-} to @var{arg} before passing it to the postprocessor.  If the
 @code{print} keyword in the device description file is missing,
 @option{-L} is ignored.
+
+@item -m@var{name}
+Read in the file @file{@var{name}.tmac}.  Normally @code{groff} searches
+for this in its macro directories.  If it isn't found, it tries
+@file{tmac.@var{name}} (searching in the same directories).
+
+@item -M@var{dir}
+Search directory @file{@var{dir}} for macro files before the standard
+directories (@pxref{Macro Directories}).
+
+@item -n@var{num}
+Number the first page @var{num}.
+
+@item -N
+Don't allow newlines with @code{eqn} delimiters.  This is the same as
+the @option{-N} option in @code{geqn}.
+
+@item -o@var{list}
+@cindex print current page register (@code{.P})
+Output only pages in @var{list}, which is a comma-separated list of page
+ranges; @samp{@var{n}} means print page@tie{}@var{n},
+@samp{@var{m}-@var{n}} means print every page between @var{m}
+and@tie{}@var{n}, @samp{-@var{n}} means print every page up
+to@tie{}@var{n}, @samp{@var{n}-} means print every page beginning
+with@tie{}@var{n}.  @code{gtroff} exits after printing the last page in
+the list.  All the ranges are inclusive on both ends.
+
+Within @code{gtroff}, this information can be extracted with the
+@samp{.P} register.  @xref{Built-in Registers}.
+
+If your document restarts page numbering at the beginning of each
+chapter, then @code{gtroff} prints the specified page range for each
+chapter.
+
+@item -p
+Preprocess with @code{gpic}.
+
+@item -P@var{arg}
+Pass @var{arg} to the postprocessor.  Each argument should be passed
+with a separate @option{-P} option.  Note that @code{groff} does not
+prepend @samp{-} to @var{arg} before passing it to the postprocessor.
+
+@item -r@var{c}@var{n}
+@itemx -r@var{name}=@var{n}
+Set number register@tie{}@var{c} or @var{name} to the
+value@tie{}@var{n}.  @var{c}@tie{}must be a one-letter name; @var{name}
+can be of arbitrary length.  @var{n}@tie{}can be any @code{gtroff}
+numeric expression.  All register assignments happen before loading any
+macro file (including the start-up file).
+
+@item -R
+Preprocess with @code{grefer}.  No mechanism is provided for passing
+arguments to @code{grefer} because most @code{grefer} options have
+equivalent commands which can be included in the file.  @xref{grefer},
+for more details.
+
+@pindex troffrc
+@pindex troffrc-end
+Note that @code{gtroff} also accepts a @option{-R} option, which is not
+accessible via @code{groff}.  This option prevents the loading of the
+@file{troffrc} and @file{troffrc-end} files.
+
+@item -s
+Preprocess with @code{gsoelim}.
+
+@item -S
+@cindex @code{open} request, and safer mode
+@cindex @code{opena} request, and safer mode
+@cindex @code{pso} request, and safer mode
+@cindex @code{sy} request, and safer mode
+@cindex @code{pi} request, and safer mode
+@cindex safer mode
+@cindex mode, safer
+Safer mode.  Pass the @option{-S} option to @code{gpic} and disable the
+@code{open}, @code{opena}, @code{pso}, @code{sy}, and @code{pi}
+requests.  For security reasons, this is enabled by default.
+
+@item -t
+Preprocess with @code{gtbl}.
 
 @item -T@var{dev}
 Prepare output for device @var{dev}.  The default device is @samp{ps},
@@ -1142,6 +1270,27 @@ The postprocessor to be used for a device is specified by the
 Files}, for more info.)  This can be overridden with the @option{-X}
 option.
 
+@item -U
+@cindex mode, unsafe
+@cindex unsafe mode
+Unsafe mode.  This enables the @code{open}, @code{opena}, @code{pso},
+@code{sy}, and @code{pi} requests.
+
+@item -w@var{name}
+Enable warning @var{name}.  Available warnings are described in
+@ref{Debugging}.  Multiple @option{-w} options are allowed.
+
+@item -W@var{name}
+Inhibit warning @var{name}.  Multiple @option{-W} options are allowed.
+
+@item -v
+Make programs run by @code{groff} print out their version number.
+
+@item -V
+Print the pipeline on @code{stdout} instead of executing it.  If
+specified more than once, print the pipeline on @code{stderr} and
+execute it.
+
 @item -X
 Preview with @code{gxditview} instead of using the usual postprocessor.
 This is unlikely to produce good results except with @option{-Tps}.
@@ -1151,144 +1300,12 @@ Note that this is not the same as using @option{-TX75} or
 uses the metrics of the specified device, whereas the latter uses
 X-specific fonts and metrics.
 
-@item -N
-Don't allow newlines with @code{eqn} delimiters.  This is the same as
-the @option{-N} option in @code{geqn}.
+@item -z
+Suppress output from @code{gtroff}.  Only error messages are printed.
 
-@item -S
-@cindex @code{open} request, and safer mode
-@cindex @code{opena} request, and safer mode
-@cindex @code{pso} request, and safer mode
-@cindex @code{sy} request, and safer mode
-@cindex @code{pi} request, and safer mode
-@cindex safer mode
-@cindex mode, safer
-Safer mode.  Pass the @option{-S} option to @code{gpic} and disable the
-@code{open}, @code{opena}, @code{pso}, @code{sy}, and @code{pi}
-requests.  For security reasons, this is enabled by default.
-
-@item -U
-@cindex mode, unsafe
-@cindex unsafe mode
-Unsafe mode.  This enables the @code{open}, @code{opena}, @code{pso},
-@code{sy}, and @code{pi} requests.
-
-@item -a
-@cindex @acronym{ASCII} approximation output register (@code{.A})
-Generate an @acronym{ASCII} approximation of the typeset output.  The
-read-only register @code{.A} is then set to@tie{}1.  @xref{Built-in
-Registers}.  A typical example is
-
-@Example
-groff -a -man -Tdvi troff.man | less
-@endExample
-
-@noindent
-which shows how lines are broken for the DVI device.  Note that this
-option is rather useless today since graphic output devices are
-available virtually everywhere.
-
-@item -b
-Print a backtrace with each warning or error message.  This backtrace
-should help track down the cause of the error.  The line numbers given
-in the backtrace may not always be correct: @code{gtroff} can get
-confused by @code{as} or @code{am} requests while counting line numbers.
-
-@item -i
-Read the standard input after all the named input files have been
-processed.
-
-@item -w@var{name}
-Enable warning @var{name}.  Available warnings are described in
-@ref{Debugging}.  Multiple @option{-w} options are allowed.
-
-@item -W@var{name}
-Inhibit warning @var{name}.  Multiple @option{-W} options are allowed.
-
-@item -E
-Inhibit all error messages.
-
-@item -C
-Enable compatibility mode.  @xref{Implementation Differences}, for the
-list of incompatibilities between @code{groff} and @acronym{AT&T}
-@code{troff}.
-
-@item -d@var{c}@var{s}
-@itemx -d@var{name}=@var{s}
-Define @var{c} or @var{name} to be a string@tie{}@var{s}.
-@var{c}@tie{}must be a one-letter name; @var{name} can be of arbitrary
-length.  All string assignments happen before loading any macro file
-(including the start-up file).
-
-@item -f@var{fam}
-Use @var{fam} as the default font family.  @xref{Font Families}.
-
-@item -m@var{name}
-Read in the file @file{@var{name}.tmac}.  Normally @code{groff} searches
-for this in its macro directories.  If it isn't found, it tries
-@file{tmac.@var{name}} (searching in the same directories).
-
-@item -n@var{num}
-Number the first page @var{num}.
-
-@item -o@var{list}
-@cindex print current page register (@code{.P})
-Output only pages in @var{list}, which is a comma-separated list of page
-ranges; @samp{@var{n}} means print page@tie{}@var{n},
-@samp{@var{m}-@var{n}} means print every page between @var{m}
-and@tie{}@var{n}, @samp{-@var{n}} means print every page up
-to@tie{}@var{n}, @samp{@var{n}-} means print every page beginning
-with@tie{}@var{n}.  @code{gtroff} exits after printing the last page in
-the list.  All the ranges are inclusive on both ends.
-
-Within @code{gtroff}, this information can be extracted with the
-@samp{.P} register.  @xref{Built-in Registers}.
-
-If your document restarts page numbering at the beginning of each
-chapter, then @code{gtroff} prints the specified page range for each
-chapter.
-
-@item -r@var{c}@var{n}
-@itemx -r@var{name}=@var{n}
-Set number register@tie{}@var{c} or @var{name} to the
-value@tie{}@var{n}.  @var{c}@tie{}must be a one-letter name; @var{name}
-can be of arbitrary length.  @var{n}@tie{}can be any @code{gtroff}
-numeric expression.  All register assignments happen before loading any
-macro file (including the start-up file).
-
-@item -F@var{dir}
-Search @file{@var{dir}} for subdirectories @file{dev@var{name}}
-(@var{name} is the name of the device), for the @file{DESC} file, and
-for font files before looking in the standard directories (@pxref{Font
-Directories}).  This option is passed to all pre- and postprocessors
-using the @env{GROFF_FONT_PATH} environment variable.
-
-@item -M@var{dir}
-Search directory @file{@var{dir}} for macro files before the standard
-directories (@pxref{Macro Directories}).
-
-@item -I@var{dir}
-This option may be used to specify a directory to search for files.
-It is passed to the following programs:
-
-@itemize
-@item
-@code{gsoelim} (see @ref{gsoelim} for more details);
-it also implies @code{groff}'s @option{-s} option.
-
-@item
-@code{gtroff}; it is used to search files named in the @code{psbb} and
-@code{so} requests.
-
-@item
-@code{grops}; it is used to search files named in the
-@w{@code{\X'ps: import}} and @w{@code{\X'ps: file}} escapes.
-@end itemize
-
-The current directory is always searched first.  This option may be
-specified more than once; the directories are searched in the order
-specified.  No directory search is performed for files specified using
-an absolute path.
+@item -Z
+Do not postprocess the output of @code{gtroff}.  Normally @code{groff}
+automatically runs the appropriate postprocessor.
 @end table
 
 
@@ -1303,6 +1320,11 @@ There are also several environment variables (of the operating system,
 not within @code{gtroff}) which can modify the behavior of @code{groff}.
 
 @table @code
+@item GROFF_BIN_PATH
+@tindex GROFF_BIN_PATH@r{, environment variable}
+This search path, followed by @code{PATH}, is used for commands executed
+by @code{groff}.
+
 @item GROFF_COMMAND_PREFIX
 @tindex GROFF_COMMAND_PREFIX@r{, environment variable}
 @cindex command prefix
@@ -1311,21 +1333,22 @@ If this is set to@tie{}@var{X}, then @code{groff} runs
 @code{@var{X}troff} instead of @code{gtroff}.  This also applies to
 @code{tbl}, @code{pic}, @code{eqn}, @code{grn}, @code{refer}, and
 @code{soelim}.  It does not apply to @code{grops}, @code{grodvi},
-@code{grotty}, @code{pre-grohtml}, @code{post-grohtml}, @code{grolj4},
-and @code{gxditview}.
+@code{grotty}, @code{pre-grohtml}, @code{post-grohtml}, @code{preconv},
+@code{grolj4}, and @code{gxditview}.
 
 The default command prefix is determined during the installation
 process.  If a non-GNU troff system is found, prefix @samp{g} is used,
 none otherwise.
 
-@item GROFF_TMAC_PATH
-@tindex GROFF_TMAC_PATH@r{, environment variable}
-A colon-separated list of directories in which to search for macro files
-(before the default directories are tried).  @xref{Macro Directories}.
-
-@item GROFF_TYPESETTER
-@tindex GROFF_TYPESETTER@r{, environment variable}
-The default output device.
+@item GROFF_ENCODING
+@tindex GROFF_ENCODING@r{, environment variable}
+The value of this environment value is passed to the @code{preconv}
+preprocessor to select the encoding of input files.  Setting this option
+implies @code{groff}'s command line option @option{-k} (this is,
+@code{groff} actually always calls @code{preconv}).  If set without a
+value, @code{groff} calls @code{preconv} without arguments.  An explicit
+@option{-K} command line option overrides the value of
+@env{GROFF_ENCODING}.  See the manual page of @code{preconv} for details.
 
 @item GROFF_FONT_PATH
 @tindex GROFF_FONT_PATH@r{, environment variable}
@@ -1333,10 +1356,10 @@ A colon-separated list of directories in which to search for the
 @code{dev}@var{name} directory (before the default directories are
 tried).  @xref{Font Directories}.
 
-@item GROFF_BIN_PATH
-@tindex GROFF_BIN_PATH@r{, environment variable}
-This search path, followed by @code{PATH}, is used for commands executed
-by @code{groff}.
+@item GROFF_TMAC_PATH
+@tindex GROFF_TMAC_PATH@r{, environment variable}
+A colon-separated list of directories in which to search for macro files
+(before the default directories are tried).  @xref{Macro Directories}.
 
 @item GROFF_TMPDIR
 @tindex GROFF_TMPDIR@r{, environment variable}
@@ -1347,6 +1370,10 @@ directory.  Otherwise temporary files are created in a system-dependent
 default directory (on Unix and GNU/Linux systems, this is usually
 @file{/tmp}).  @code{grops}, @code{grefer}, @code{pre-grohtml}, and
 @code{post-grohtml} can create temporary files in this directory.
+
+@item GROFF_TYPESETTER
+@tindex GROFF_TYPESETTER@r{, environment variable}
+The default output device.
 @end table
 
 Note that MS-DOS and MS-Windows ports of @code{groff} use semi-colons,
@@ -1415,11 +1442,11 @@ directory, and the main tmac directory; the default locations are
 @Example
 /usr/local/lib/groff/site-tmac
 /usr/local/share/groff/site-tmac
-/usr/local/share/groff/1.20.1/tmac
+/usr/local/share/groff/1.21/tmac
 @endExample
 
 @noindent
-assuming that the version of @code{groff} is 1.20.1, and the
+assuming that the version of @code{groff} is 1.21, and the
 installation prefix was @file{/usr/local}.  It is possible to fine-tune
 those directories during the installation process.
 @end itemize
@@ -1472,11 +1499,11 @@ locations are
 
 @Example
 /usr/local/share/groff/site-font
-/usr/local/share/groff/1.20.1/font
+/usr/local/share/groff/1.21/font
 @endExample
 
 @noindent
-assuming that the version of @code{groff} is 1.20.1, and the
+assuming that the version of @code{groff} is 1.21, and the
 installation prefix was @file{/usr/local}.  It is possible to fine-tune
 those directories during the installation process.
 @end itemize
@@ -3091,6 +3118,15 @@ Defines the minimum width between columns in a multi-column document.
 Effective: next page.
 
 Default: 2@dmn{n}.
+@endDefmpreg
+
+@Defmpreg {DD, ms}
+Sets the vertical spacing before and after a display, a @code{tbl} table, an
+@code{eqn} equation, or a @code{pic} image.
+
+Effective: next paragraph.
+
+Default: 0.5@dmn{v}.
 @endDefmpreg
 
 @c ---------------------------------------------------------------------
@@ -4751,9 +4787,11 @@ with the blank line macro request @code{blm}.  @xref{Blank Line Traps}.
 
 @cindex fill mode
 @cindex mode, fill
+@cindex leading spaces macro (@code{lsm})
 A line that begins with a space causes a break and the space is output
 at the beginning of the next line.  Note that this space isn't adjusted,
-even in fill mode.
+even in fill mode; however, the behaviour can be modified with the
+leading spaces macro request @code{lsm}.  @xref{Leading Spaces Traps}.
 
 The end of file also causes a break -- otherwise the last line of the
 document may vanish!
@@ -5089,6 +5127,32 @@ not; this works only within @code{if} and @code{while}
 requests).@footnote{Note that, for example, @samp{!(-1)} evaluates to
 `true' because @code{gtroff} treats both negative numbers and zero as
 `false'.}  See below for the use of unary operators in motion requests.
+
+@cindex logical not, limitation in expression
+@cindex expression, limitation of logical not in
+The logical not operator,
+as described above,
+works only within @code{if} and @code{while} requests.
+Furthermore, it may appear
+only at the beginning of an expression,
+and negates the entire expression.
+Attempting to insert the @samp{!} operator
+within the expression results in a
+@samp{numeric expression expected} warning.  This
+maintains bug-compatibility
+with old versions of @code{troff}.
+
+Example:
+
+@Example
+.nr X 1
+.nr Y 0
+.\" This does not work as expected
+.if (\n[X])&(!\n[Y]) .nop X only
+.
+.\" Use this construct instead
+.if (\n[X]=1)&(\n[Y]=0) .nop X only
+@endExample
 
 @item
 @cindex extremum operators (@code{>?}, @code{<?})
@@ -5960,7 +6024,6 @@ The argument to @code{\R} usually has to be enclosed in quotes.
 The @code{\R} escape doesn't produce an input token in @code{gtroff};
 in other words, it vanishes completely after @code{gtroff} has
 processed it.
-@endDefreq
 
 For example, the following two lines are equivalent:
 
@@ -5969,6 +6032,43 @@ For example, the following two lines are equivalent:
 \R'a (((17 + (3 * 4))) % 4)'
     @result{} 1
 @endExample
+
+Note that the complete transparency of @code{\R} can cause surprising
+effects if you use number registers like @code{.k} which get evaluated
+at the time they are accessed.
+
+@Example
+.ll 1.6i
+.
+aaa bbb ccc ddd eee fff ggg hhh\R':k \n[.k]'
+.tm :k == \n[:k]
+    @result{} :k == 126950
+.
+.br
+.
+aaa bbb ccc ddd eee fff ggg hhh\h'0'\R':k \n[.k]'
+.tm :k == \n[:k]
+    @result{} :k == 15000
+@endExample
+
+If you process this with the PostScript device (@code{-Tps}), there
+will be a line break eventually after @code{ggg} in both input lines.
+However, after processing the space after @code{ggg}, the partially
+collected line is not overfull yet, so @code{troff} continues to
+collect input until it sees the space (or in this case, the newline)
+after @code{hhh}.  At this point, the line is longer than the line
+length, and the line gets broken.
+
+In the first input line, since the @code{\R} escape leaves no traces,
+the check for the overfull line hasn't been done yet at the point where
+@code{\R} gets handled, and you get a value for the @code{.k} number
+register which is even greater than the current line length.
+
+In the second input line, the insertion of @code{\h'0'} to emit an
+invisible zero-width space forces @code{troff} to check the line length
+which in turn causes the start of a new output line.  Now @code{.k}
+returns the expected value.
+@endDefreq
 
 Both @code{nr} and @code{\R} have two additional special forms to
 increment or decrement a register.
@@ -6276,11 +6376,19 @@ This string-valued register returns the current input file name.
 @vindex .H
 Horizontal resolution in basic units.
 
+@item \n[.R]
+@cindex number of registers register (@code{.R})
+@cindex registers, number of, register (@code{.R})
+@vindex .R
+The number of number registers available.  This is always 10000 in
+GNU@tie{}@code{troff}; it exists for backward compatibility.
+
 @item \n[.U]
 @cindex safer mode
 @cindex mode, safer
 @cindex unsafe mode
 @cindex mode, unsafe
+@vindex .U
 If @code{gtroff} is called with the @option{-U} command line option to
 activate unsafe mode, the number register @code{.U} is set to@tie{}1,
 and to zero otherwise.  @xref{Groff Options}.
@@ -6966,7 +7074,9 @@ current list of patterns.  Its arguments are pairs of character codes --
 integers from 0 to@tie{}255.  The request maps character
 code@tie{}@var{a} to code@tie{}@var{b}, code@tie{}@var{c} to
 code@tie{}@var{d}, and so on.  You can use character codes which would
-be invalid otherwise.
+be invalid otherwise.  By default, everything maps to itself except
+letters `A' to `Z' which map to `a' to `z'.
+
 
 @pindex troffrc
 @pindex troffrc-end
@@ -7791,7 +7901,7 @@ character is followed by a dot, and the dot itself is printed.
 
 @noindent
 The first backslash is consumed while the macro is read, and the second
-is swallowed while exexuting macro @code{foo}.
+is swallowed while executing macro @code{foo}.
 @endDefesc
 
 A @dfn{translation} is a mapping of an input character to an output
@@ -8616,6 +8726,7 @@ special symbols (Greek, mathematics).
 * Font Families::
 * Font Positions::
 * Using Symbols::
+* Character Classes::
 * Special Fonts::
 * Artificial Fonts::
 * Ligatures and Kerning::
@@ -9012,7 +9123,7 @@ this is font 1 again
 
 @c ---------------------------------------------------------------------
 
-@node Using Symbols, Special Fonts, Font Positions, Fonts and Symbols
+@node Using Symbols, Character Classes, Font Positions, Fonts and Symbols
 @subsection Using Symbols
 @cindex using symbols
 @cindex symbols, using
@@ -9348,7 +9459,9 @@ width, depth, and height, nothing else.  All manipulations with the
 modified with the @code{cflags} request.  The first argument is the sum
 of the desired flags and the remaining arguments are the characters or
 symbols to have those properties.  It is possible to omit the spaces
-between the characters or symbols.
+between the characters or symbols.  Instead of single characters or
+symbols you can also use character classes (see @ref{Character Classes}
+for more details).
 
 @table @code
 @item 1
@@ -9424,6 +9537,27 @@ into your document.  Note, however, that this can lead to bad layout if
 done without thinking; in most situations, a better solution instead of
 changing the @code{cflags} value is to insert @code{\:} right after the
 hyphen at the places which really need a break point.
+
+@item 128
+Prohibit a line break before the character, but allow a line break after
+the character.  This works only in combination with flags 256 and 512
+(see below) and has no effect otherwise.
+
+@item 256
+Prohibit a line break after the character, but allow a line break before
+the character.  This works only in combination with flags 128 and 512
+(see below) and has no effect otherwise.
+
+@item 512
+Allow line break before or after the character.  This works only in
+combination with flags 128 and 256 and has no effect otherwise.
+
+Contrary to flag values 2 and@tie{}4, the flags 128, 256, and 512 work
+pairwise.  If, for example, the left character has value 512, and the
+right character 128, no line break gets inserted.  If we use
+value@tie{}6 instead for the left character, a line break after the
+character can't be suppressed since the right neighbour character
+doesn't get examined.
 @end table
 @endDefreq
 
@@ -9529,7 +9663,83 @@ The request @code{rfschar} removes glyph definitions defined with
 
 @c ---------------------------------------------------------------------
 
-@node Special Fonts, Artificial Fonts, Using Symbols, Fonts and Symbols
+@node Character Classes, Special Fonts, Using Symbols, Fonts and Symbols
+@subsection Character Classes
+@cindex character classes
+@cindex classes, character
+
+Classes are particularly useful for East Asian languages such as
+Chinese, Japanese, and Korean, where the number of needed characters is
+much larger than in European languages, and where large sets of
+characters share the same properties.
+
+@Defreq {class, n c1 c2 @dots{}}
+@cindex character class (@code{class})
+@cindex defining character class (@code{class})
+@cindex class of characters (@code{class})
+In @code{groff}, a @dfn{character class} (or simply ``class'') is a set
+of characters, grouped by some user aspect.  The @code{class} request
+defines such classes so that other requests can refer to all characters
+belonging to this set with a single class name.  Currently, only the
+@code{cflags} request can handle character classes.
+
+A @code{class} request takes a class name followed by a list of
+entities.  In its simplest form, the entities are characters or symbols:
+
+@Example
+.class [prepunct] , : ; > @}
+@endExample
+
+Since class and glyph names share the same namespace, it is recommended
+to start and end the class name with @code{[} and @code{]},
+respectively, to avoid collisions with normal @code{groff} symbols (and
+symbols defined by the user).  In particular, the presence of @code{]}
+in the symbol name intentionally prevents the usage of @code{\[...]},
+thus you must use the @code{\C} escape to access a class with such a
+name.
+
+@cindex GGL (groff glyph list)
+@cindex groff glyph list (GGL)
+You can also use a special character range notation, consisting of a
+start character or symbol, followed by @samp{-}, and an end character or
+symbol.  Internally, @code{gtroff} converts these two symbol names to
+Unicode values (according to the groff glyph gist) which then give the
+start and end value of the range.  If that fails, the class definition
+is skipped.
+
+Finally, classes can be nested, too.  
+
+Here is a more complex example:
+
+@Example
+.class [prepunctx] \C'[prepunct]' \[u2013]-\[u2016]
+@endExample
+
+The class @samp{prepunctx} now contains the contents of the class
+@code{prepunct} as defined above (the set @samp{, : ; > @}}), and
+characters in the range between @code{U+2013} and @code{U+2016}.
+
+If you want to add @samp{-} to a class, it must be the first character
+value in the argument list, otherwise it gets misinterpreted as a range.
+
+Note that it is not possible to use class names within range
+definitions.
+
+Typical use of the @code{class} request is to control line-breaking and
+hyphenation rules as defined by the @code{cflags} request.  For example,
+to inhibit line breaks before the characters belonging to the
+@code{prepunctx} class, you can write:
+
+@Example
+.cflags 2 \C'[prepunctx]'
+@endExample
+
+See the @code{cflags} request in @ref{Using Symbols}, for more details.
+@endDefreq
+
+@c ---------------------------------------------------------------------
+
+@node Special Fonts, Artificial Fonts, Character Classes, Fonts and Symbols
 @subsection Special Fonts
 @cindex special fonts
 @cindex fonts, special
@@ -10697,8 +10907,8 @@ inserted additionally by @code{gtroff}.
 @cindex @code{if} request, operators to use with
 @cindex @code{ie} request, operators to use with
 @cindex @code{while} request, operators to use with
-In @code{if}, @code{ie}, and @code{while} requests, there are several
-more operators available:
+In @code{if}, @code{ie}, and @code{while} requests, in addition to ordinary
+@ref{Expressions}, there are several more operators available:
 
 @table @code
 @item e
@@ -10852,7 +11062,7 @@ Evaluate the expression @var{expr}, and executes @var{anything} (the
 remainder of the line) if @var{expr} evaluates to a value greater than
 zero (true).  @var{anything} is interpreted as though it was on a line
 by itself (except that leading spaces are swallowed).
-@xref{Expressions}, for more info.
+@xref{Operators in Conditionals}, for more info.
 
 @Example
 .nr xxx 1
@@ -12035,6 +12245,7 @@ executed.
 * Diversion Traps::
 * Input Line Traps::
 * Blank Line Traps::
+* Leading Spaces Traps::
 * End-of-input Traps::
 @end menu
 
@@ -12330,7 +12541,7 @@ of already processed lines.
 
 @c ---------------------------------------------------------------------
 
-@node Blank Line Traps, End-of-input Traps, Input Line Traps, Traps
+@node Blank Line Traps, Leading Spaces Traps, Input Line Traps, Traps
 @subsection Blank Line Traps
 @cindex blank line traps
 @cindex traps, blank line
@@ -12343,7 +12554,42 @@ encounters a blank line in the input file.
 
 @c ---------------------------------------------------------------------
 
-@node End-of-input Traps,  , Blank Line Traps, Traps
+@node Leading Spaces Traps, End-of-input Traps, Blank Line Traps, Traps
+@subsection Leading Spaces Traps
+@cindex leading spaces traps
+@cindex traps, leading spaces
+
+@DefreqList {lsm, macro}
+@DefregItem {lsn}
+@DefregListEnd {lss}
+@cindex leading spaces macro (@code{lsm})
+Set a leading spaces trap.  @code{gtroff} executes @var{macro} when it
+encounters leading spaces in an input line; the implicit line break
+which normally happens in this case is suppressed.  A line consisting
+of spaces only, however, is treated as an empty line, possibly subject
+to an empty line macro set with the @code{blm} request.
+
+Leading spaces are removed from the input line before calling the
+leading spaces macro.  The number of removed spaces is stored in
+register @code{lsn}; the horizontal space which would be emitted if
+there was no leading space macro is stored in register @code{lss}.
+Note that @code{lsn} and @code{lss} are available even if no leading
+space macro has been set.
+
+The first thing a leading space macro sees is a token.  However, some
+escapes like @code{\f} or @code{\m} are handled on the fly (see
+@ref{Gtroff Internals}, for a complete list) without creating a token
+at all.  Consider that a line starts with two spaces followed by
+@code{\fIfoo}.  While skipping the spaces @code{\fI} is handled too so
+that groff's current font is properly set to @samp{I}, but the leading
+space macro only sees @code{foo}, without the preceding @code{\fI}.
+If the macro should see the font escape you have to `protect' it with
+something which creates a token, for example with @code{\&\fIfoo}.
+@endDefreq
+
+@c ---------------------------------------------------------------------
+
+@node End-of-input Traps,  , Leading Spaces Traps, Traps
 @subsection End-of-input Traps
 @cindex end-of-input traps
 @cindex traps, end-of-input
@@ -12363,8 +12609,9 @@ used.
 
 @Example
 .de approval
-.  ne 5v
-.  sp |(\\n[.t] - 6v)
+\c
+.  ne 3v
+.  sp (\\n[.t]u - 3v)
 .  in +4i
 .  lc _
 .  br
@@ -12375,6 +12622,56 @@ Date:\t\t\a
 .
 .em approval
 @endExample
+
+The @code{\c} in the above example needs explanation.  For historical
+reasons (and for compatibility with @acronym{AT&T} @code{troff}), the
+end macro exits as soon as it causes a page break and no remaining
+data is in the partially collected line.
+
+Let us assume that there is no @code{\c} in the above @code{approval}
+macro, and that the page is full and has been ended with, say, a
+@code{br} request.  The @code{ne} request now causes the start of a new
+page, which in turn makes @code{troff} exit immediately for the reasons
+just described.  In most situations this is not intended.
+
+To always force processing the whole end macro independently of this
+behaviour it is thus advisable to insert something which starts an
+empty partially filled line (@code{\c}) whenever there is a chance that
+a page break can happen.  In the above example, the call of the
+@code{ne} request assures that the remaining code stays on the same
+page, so we have to insert @code{\c} only once.
+
+The next example shows how to append three lines, then starting a new
+page unconditionally.  Since @w{@samp{.ne 1}} doesn't give the desired
+effect -- there is always one line available or we are already at the
+beginning of the next page -- we temporarily increase the page length
+by one line so that we can use @w{@samp{.ne 2}}.
+
+@Example
+.de EM
+.pl +1v
+\c
+.ne 2
+line one
+.br
+\c
+.ne 2
+line two
+.br
+\c
+.ne 2
+line three
+.br
+.pl -1v
+\c
+'bp
+..
+.em EM
+@endExample
+
+Note that this specific feature affects only the first potential page
+break caused by the end macro; further page breaks emitted by the end
+macro are handled normally.
 @endDefreq
 
 
@@ -13086,6 +13383,8 @@ for the specified @var{file} in the same directories as macro files for
 the the @option{-m} command line option.  If the file name to be
 included has the form @file{@var{name}.tmac} and it isn't found,
 @code{mso} tries to include @file{tmac.@var{name}} and vice versa.
+If the file does not exist, a warning of type @samp{file} is emitted.
+@xref{Debugging}, for information about warnings.
 @endDefreq
 
 @DefreqList {trf, file}
@@ -14136,6 +14435,11 @@ conditions that are errors when they do not occur in ignored text.
 @itemx 524288
 Color related warnings.
 
+@item file
+@itemx 1048576
+Missing files.  The @code{mso} request gives this warning when the
+requested macro file does not exist.  This is enabled by default.
+
 @item all
 All warnings except @samp{di}, @samp{mac} and @samp{reg}.  It is
 intended that this covers all warnings that are useful with traditional
@@ -14362,6 +14666,7 @@ which are freely available.
 * grap::
 * grefer::
 * gsoelim::
+* preconv::
 @end menu
 
 
@@ -14496,7 +14801,7 @@ is available as an extra package from the following address:
 
 @c =====================================================================
 
-@node gsoelim,  , grefer, Preprocessors
+@node gsoelim, preconv, grefer, Preprocessors
 @section @code{gsoelim}
 @cindex @code{soelim}, the program
 @cindex @code{gsoelim}, the program
@@ -14516,6 +14821,27 @@ is available as an extra package from the following address:
 
 @c XXX
 
+
+@c =====================================================================
+
+@node preconv,  , gsoelim, Preprocessors
+@section @code{preconv}
+@cindex @code{preconv}, the program
+
+@c XXX
+
+@menu
+* Invoking preconv::
+@end menu
+
+@c ---------------------------------------------------------------------
+
+@node Invoking preconv,  , preconv, preconv
+@subsection Invoking @code{preconv}
+@cindex invoking @code{preconv}
+@cindex @code{preconv}, invoking
+
+@c XXX
 
 
 @c =====================================================================
@@ -14696,7 +15022,28 @@ is available as an extra package from the following address:
 @section @code{grohtml}
 @cindex @code{grohtml}, the program
 
-@c XXX
+The @code{grohtml} front end (which consists of a preprocessor,
+@code{pre-grohtml}, and a device driver, @code{post-grohtml}) translates
+the output of GNU @code{troff} to @acronym{HTML}.  Users should always
+invoke @code{grohtml} via the @code{groff} command with a @code{\-Thtml}
+option.  If no files are given, @code{grohtml} will read the standard
+input.  A filename of @code{-} will also cause @code{grohtml} to read
+the standard input.  @acronym{HTML} output is written to the standard
+output.  When @code{grohtml} is run by @code{groff}, options can be
+passed to @code{grohtml} using @code{groff}'s @code{-P} option.
+
+@code{grohtml} invokes @code{groff} twice.  In the first pass, pictures,
+equations, and tables are rendered using the @code{ps} device, and in
+the second pass @acronym{HTML} output is generated by the @code{html}
+device.
+
+@code{grohtml} always writes output in @code{UTF-8} encoding and has
+built-in entities for all non-composite unicode characters.  In spite of
+this, @code{groff} may issue warnings about unknown special characters
+if they can't be found during the first pass.  Such warnings can be
+safely ignored unless the special characters appear inside a table or
+equation, in which case glyphs for these characters must be defined for
+the @code{ps} device as well.
 
 @menu
 * Invoking grohtml::

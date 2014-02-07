@@ -1,6 +1,6 @@
 // -*- C++ -*-
 /* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2007, 2008, 2009
+                 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -59,7 +59,7 @@ extern "C" {
 #ifndef DEFAULT_WARNING_MASK
 // warnings that are enabled by default
 #define DEFAULT_WARNING_MASK \
-     (WARN_CHAR|WARN_NUMBER|WARN_BREAK|WARN_SPACE|WARN_FONT)
+     (WARN_CHAR|WARN_NUMBER|WARN_BREAK|WARN_SPACE|WARN_FONT|WARN_FILE)
 #endif
 
 // initial size of buffer for reading names; expanded as necessary
@@ -83,6 +83,7 @@ void transparent_file();
 
 token tok;
 int break_flag = 0;
+int class_flag = 0;
 int color_flag = 1;		// colors are on by default
 static int backtrace_flag = 0;
 #ifndef POPEN_MISSING
@@ -101,6 +102,7 @@ static void disable_warning(const char *);
 static int escape_char = '\\';
 static symbol end_macro_name;
 static symbol blank_line_macro_name;
+static symbol leading_spaces_macro_name;
 static int compatible_flag = 0;
 int ascii_output_flag = 0;
 int suppress_output_flag = 0;
@@ -120,7 +122,7 @@ double spread_limit = -3.0 - 1.0;	// negative means deactivated
 
 double warn_scale;
 char warn_scaling_indicator;
-int debug_state = 0;            // turns on debugging of the html troff state
+int debug_state = 0;		// turns on debugging of the html troff state
 
 search_path *mac_path = &safer_macro_path;
 
@@ -530,6 +532,8 @@ void input_stack::check_end_diversion(input_iterator *t)
 {
   if (t->is_diversion) {
     div_level--;
+    if (diversion_state)
+      delete diversion_state;
     diversion_state = t->diversion_state;
   }
 }
@@ -1433,7 +1437,7 @@ static void define_color()
   skip_line();
 }
 
-static node *do_overstrike()
+node *do_overstrike()
 {
   token start;
   overstrike_node *on = new overstrike_node;
@@ -1449,11 +1453,21 @@ static node *do_overstrike()
     if (tok == start
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
-    charinfo *ci = tok.get_char(1);
-    if (ci) {
-      node *n = curenv->make_char_node(ci);
-      if (n)
-	on->overstrike(n);
+    if (tok.horizontal_space())
+      on->overstrike(tok.nd->copy());
+    else if (tok.unstretchable_space())
+    {
+      node *n = new hmotion_node(curenv->get_space_width(),
+				 curenv->get_fill_color());
+      on->overstrike(n);
+    }
+    else {
+      charinfo *ci = tok.get_char(1);
+      if (ci) {
+	node *n = curenv->make_char_node(ci);
+	if (n)
+	  on->overstrike(n);
+      }
     }
   }
   return on;
@@ -1798,13 +1812,13 @@ void token::next()
 	goto handle_escape_char;
       case ESCAPE_BAR:
       ESCAPE_BAR:
-	type = TOKEN_NODE;
+	type = TOKEN_HORIZONTAL_SPACE;
 	nd = new hmotion_node(curenv->get_narrow_space_width(),
 			      curenv->get_fill_color());
 	return;
       case ESCAPE_CIRCUMFLEX:
       ESCAPE_CIRCUMFLEX:
-	type = TOKEN_NODE;
+	type = TOKEN_HORIZONTAL_SPACE;
 	nd = new hmotion_node(curenv->get_half_narrow_space_width(),
 			      curenv->get_fill_color());
 	return;
@@ -1925,7 +1939,7 @@ void token::next()
       case '0':
 	nd = new hmotion_node(curenv->get_digit_width(),
 			      curenv->get_fill_color());
-	type = TOKEN_NODE;
+	type = TOKEN_HORIZONTAL_SPACE;
 	return;
       case '|':
 	goto ESCAPE_BAR;
@@ -2060,7 +2074,7 @@ void token::next()
       case 'h':
 	if (!get_delim_number(&x, 'm'))
 	  break;
-	type = TOKEN_NODE;
+	type = TOKEN_HORIZONTAL_SPACE;
 	nd = new hmotion_node(x, curenv->get_fill_color());
 	return;
       case 'H':
@@ -2215,7 +2229,7 @@ void token::next()
       case 'z':
 	{
 	  next();
-	  if (type == TOKEN_NODE)
+	  if (type == TOKEN_NODE || type == TOKEN_HORIZONTAL_SPACE)
 	    nd = new zero_width_node(nd);
 	  else {
   	    charinfo *ci = get_char(1);
@@ -2345,6 +2359,7 @@ int token::delimiter(int err)
   case TOKEN_SPACE:
   case TOKEN_STRETCHABLE_SPACE:
   case TOKEN_UNSTRETCHABLE_SPACE:
+  case TOKEN_HORIZONTAL_SPACE:
   case TOKEN_TAB:
   case TOKEN_NEWLINE:
     if (err)
@@ -2401,6 +2416,8 @@ const char *token::description()
     return "`\\~'";
   case TOKEN_UNSTRETCHABLE_SPACE:
     return "`\\ '";
+  case TOKEN_HORIZONTAL_SPACE:
+    return "a horizontal space";
   case TOKEN_TAB:
     return "a tab character";
   case TOKEN_TRANSPARENT:
@@ -2608,6 +2625,12 @@ void blank_line_macro()
   skip_line();
 }
 
+void leading_spaces_macro()
+{
+  leading_spaces_macro_name = get_name();
+  skip_line();
+}
+
 static void trapping_blank_line()
 {
   if (!blank_line_macro_name.is_null())
@@ -2773,6 +2796,9 @@ int hmotion_node::reread(int *)
   return 0;
 }
 
+static int leading_spaces_number = 0;
+static int leading_spaces_space = 0;
+
 void process_input_stack()
 {
   int_stack trap_bol_stack;
@@ -2853,11 +2879,12 @@ void process_input_stack()
 	    do {
 	      node *n;
 	      cc = get_copy(&n);
-	      if (cc != EOF)
+	      if (cc != EOF) {
 		if (cc != '\0')
 		  curdiv->transparent_output(transparent_translate(cc));
 		else
 		  curdiv->transparent_output(n);
+	      }
 	    } while (cc != '\n' && cc != EOF);
 	    if (cc == EOF)
 	      curdiv->transparent_output('\n');
@@ -2919,9 +2946,15 @@ void process_input_stack()
 	    trapping_blank_line();
 	  else {
 	    push_token(tok);
-	    curenv->do_break();
-	    curenv->add_node(new hmotion_node(space_width * nspaces,
-					      curenv->get_fill_color()));
+	    leading_spaces_number = nspaces;
+	    leading_spaces_space = space_width.to_units() * nspaces;
+	    if (!leading_spaces_macro_name.is_null())
+	      spring_trap(leading_spaces_macro_name);
+	    else {
+	      curenv->do_break();
+	      curenv->add_node(new hmotion_node(space_width * nspaces,
+						curenv->get_fill_color()));
+	    }
 	    bol = 0;
 	  }
 	}
@@ -2934,6 +2967,7 @@ void process_input_stack()
     case token::TOKEN_EOF:
       return;
     case token::TOKEN_NODE:
+    case token::TOKEN_HORIZONTAL_SPACE:
       {
 	if (possibly_handle_first_page_transition())
 	  ;
@@ -4080,7 +4114,7 @@ void spring_trap(symbol nm)
     postponed_trap = nm;
     return;
   }
-  static char buf[2] = { BEGIN_TRAP, 0 };
+  static char buf[2] = { BEGIN_TRAP, '\0' };
   static char buf2[2] = { END_TRAP, '\0' };
   input_stack::push(make_temp_iterator(buf2));
   request_or_macro *p = lookup_request(nm);
@@ -4367,6 +4401,7 @@ static void interpolate_arg(symbol nm)
 	  args += c;
       if (i != limit)
 	args += ' ';
+      delete p;
     }
     if (limit > 0) {
       args += '\0';
@@ -4388,6 +4423,7 @@ static void interpolate_arg(symbol nm)
       args += '"';
       if (i != limit)
 	args += ' ';
+      delete p;
     }
     if (limit > 0) {
       args += '\0';
@@ -4407,6 +4443,7 @@ static void interpolate_arg(symbol nm)
       }
       if (input_stack::space_follows_arg(i))
 	args += ' ';
+      delete p;
     }
     if (limit > 0) {
       args += '\0';
@@ -6566,7 +6603,7 @@ static void init_charset_table()
 static void init_hpf_code_table()
 {
   for (int i = 0; i < 256; i++)
-    hpf_code_table[i] = i;
+    hpf_code_table[i] = cmlower(i);
 }
 
 static void do_translate(int translate_transparent, int translate_input)
@@ -6704,6 +6741,116 @@ void hyphenation_patterns_file_code()
   skip_line();
 }
 
+dictionary char_class_dictionary(501);
+
+void define_class()
+{
+  tok.skip();
+  symbol nm = get_name(1);
+  if (nm.is_null()) {
+    skip_line();
+    return;
+  }
+  charinfo *ci = get_charinfo(nm);
+  charinfo *child1 = 0, *child2 = 0;
+  while (!tok.newline() && !tok.eof()) {
+    tok.skip();
+    if (child1 != 0 && tok.ch() == '-') {
+      tok.next();
+      child2 = tok.get_char(1);
+      if (!child2) {
+	warning(WARN_MISSING,
+		"missing end of character range in class `%1'",
+		nm.contents());
+	skip_line();
+	return;
+      }
+      if (child1->is_class() || child2->is_class()) {
+	warning(WARN_SYNTAX,
+		"nested character class is not allowed in range definition");
+	skip_line();
+	return;
+      }
+      int u1 = child1->get_unicode_code();
+      int u2 = child2->get_unicode_code();
+      if (u1 < 0) {
+	warning(WARN_SYNTAX,
+		"invalid start value in character range");
+	skip_line();
+	return;
+      }
+      if (u2 < 0) {
+	warning(WARN_SYNTAX,
+		"invalid end value in character range");
+	skip_line();
+	return;
+      }
+      ci->add_to_class(u1, u2);
+      child1 = child2 = 0;
+    }
+    else if (child1 != 0) {
+      if (child1->is_class()) {
+	if (ci == child1) {
+	  warning(WARN_SYNTAX, "invalid cyclic class nesting");
+	  skip_line();
+	  return;
+	}
+	ci->add_to_class(child1);
+      }
+      else {
+	int u1 = child1->get_unicode_code();
+	if (u1 < 0) {
+	  warning(WARN_SYNTAX,
+		  "invalid character value in class `%1'",
+		  nm.contents());
+	  skip_line();
+	  return;
+	}
+	ci->add_to_class(u1);
+      }
+      child1 = 0;
+    }
+    child1 = tok.get_char(1);
+    tok.next();
+    if (!child1) {
+      if (!tok.newline())
+	skip_line();
+      break;
+    }
+  }
+  if (child1 != 0) {
+    if (child1->is_class()) {
+      if (ci == child1) {
+	warning(WARN_SYNTAX, "invalid cyclic class nesting");
+	skip_line();
+	return;
+      }
+      ci->add_to_class(child1);
+    }
+    else {
+      int u1 = child1->get_unicode_code();
+      if (u1 < 0) {
+	warning(WARN_SYNTAX,
+		"invalid character value in class `%1'",
+		nm.contents());
+	skip_line();
+	return;
+      }
+      ci->add_to_class(u1);
+    }
+    child1 = 0;
+  }
+  if (!ci->is_class()) {
+    warning(WARN_SYNTAX,
+	    "empty class definition for `%1'",
+	    nm.contents());
+    skip_line();
+    return;
+  }
+  (void)char_class_dictionary.lookup(nm, ci);
+  skip_line();
+}
+
 charinfo *token::get_char(int required)
 {
   if (type == TOKEN_CHAR)
@@ -6779,6 +6926,7 @@ int token::add_to_node_list(node **pp)
     set_number_reg(nm, curenv->get_input_line_position().to_units());
     break;
   case TOKEN_NODE:
+  case TOKEN_HORIZONTAL_SPACE:
     n = nd;
     nd = 0;
     break;
@@ -6871,6 +7019,7 @@ void token::process()
     curenv->newline();
     break;
   case TOKEN_NODE:
+  case TOKEN_HORIZONTAL_SPACE:
     curenv->add_node(nd);
     nd = 0;
     break;
@@ -7350,7 +7499,7 @@ void macro_source()
       a_delete path;
     }
     else
-      error("can't find macro file `%1'", nm.contents());
+      warning(WARN_FILE, "can't find macro file `%1'", nm.contents());
     tok.next();
   }
 }
@@ -7492,6 +7641,7 @@ int main(int argc, char **argv)
     if (putenv(strsave(e.contents())))
       fatal("putenv failed");
   }
+  setlocale(LC_CTYPE, "");
   static const struct option long_options[] = {
     { "help", no_argument, 0, CHAR_MAX + 1 },
     { "version", no_argument, 0, 'v' },
@@ -7779,6 +7929,7 @@ void init_input_requests()
   init_request("cflags", char_flags);
   init_request("char", define_character);
   init_request("chop", chop_macro);
+  init_request("class", define_class);
   init_request("close", close_request);
   init_request("color", activate_color);
   init_request("composite", composite_request);
@@ -7812,6 +7963,7 @@ void init_input_requests()
   init_request("ig", ignore);
   init_request("length", length_request);
   init_request("lf", line_file);
+  init_request("lsm", leading_spaces_macro);
   init_request("mso", macro_source);
   init_request("nop", nop_request);
   init_request("nroff", nroff_request);
@@ -7879,6 +8031,8 @@ void init_input_requests()
   number_reg_dictionary.define("c.", new writable_lineno_reg);
   number_reg_dictionary.define("llx", new variable_reg(&llx_reg_contents));
   number_reg_dictionary.define("lly", new variable_reg(&lly_reg_contents));
+  number_reg_dictionary.define("lsn", new variable_reg(&leading_spaces_number));
+  number_reg_dictionary.define("lss", new variable_reg(&leading_spaces_space));
   number_reg_dictionary.define("opmaxx",
 			       new variable_reg(&output_reg_maxx_contents));
   number_reg_dictionary.define("opmaxy",
@@ -8133,6 +8287,7 @@ static struct {
   { "reg", WARN_REG },
   { "ig", WARN_IG },
   { "color", WARN_COLOR },
+  { "file", WARN_FILE },
   { "all", WARN_TOTAL & ~(WARN_DI | WARN_MAC | WARN_REG) },
   { "w", WARN_TOTAL },
   { "default", DEFAULT_WARNING_MASK },
@@ -8323,6 +8478,14 @@ charinfo::charinfo(symbol s)
 {
   index = next_index++;
   number = -1;
+  get_flags();
+}
+
+int charinfo::get_unicode_code()
+{
+  if (ascii_code != '\0')
+    return ascii_code;
+  return glyph_to_unicode(this);
 }
 
 void charinfo::set_hyphenation_code(unsigned char c)
@@ -8344,6 +8507,38 @@ void charinfo::set_translation(charinfo *ci, int tt, int ti)
   }
   special_translation = TRANSLATE_NONE;
   transparent_translate = tt;
+}
+
+// Recompute flags for all entries in the charinfo dictionary.
+void get_flags()
+{
+  dictionary_iterator iter(charinfo_dictionary);
+  charinfo *ci;
+  symbol s;
+  while (iter.get(&s, (void **)&ci)) {
+    assert(!s.is_null());
+    ci->get_flags();
+  }
+  class_flag = 0;
+}
+
+// Get the union of all flags affecting this charinfo.
+void charinfo::get_flags()
+{
+  dictionary_iterator iter(char_class_dictionary);
+  charinfo *ci;
+  symbol s;
+  while (iter.get(&s, (void **)&ci)) {
+    assert(!s.is_null());
+    if (ci->contains(get_unicode_code())) {
+#if defined(DEBUGGING)
+      if (debug_state)
+	fprintf(stderr, "charinfo::get_flags %p %s %d\n",
+			(void *)ci, ci->nm.contents(), ci->flags);
+#endif
+      flags |= ci->flags;
+    }
+  }
 }
 
 void charinfo::set_special_translation(int c, int tt)
@@ -8388,6 +8583,62 @@ int charinfo::get_number()
 {
   assert(number >= 0);
   return number;
+}
+
+bool charinfo::contains(int c, bool already_called)
+{
+  if (already_called) {
+    warning(WARN_SYNTAX,
+	    "cyclic nested class detected while processing character code %1",
+	    c);
+    return false;
+  }
+  std::vector<std::pair<int, int> >::const_iterator ranges_iter;
+  ranges_iter = ranges.begin();
+  while (ranges_iter != ranges.end()) {
+    if (c >= ranges_iter->first && c <= ranges_iter->second) {
+#if defined(DEBUGGING)
+      if (debug_state)
+	fprintf(stderr, "charinfo::contains(%d)\n", c);
+#endif
+      return true;
+    }
+    ++ranges_iter;
+  }
+
+  std::vector<charinfo *>::const_iterator nested_iter;
+  nested_iter = nested_classes.begin();
+  while (nested_iter != nested_classes.end()) {
+    if ((*nested_iter)->contains(c, true))
+      return true;
+    ++nested_iter;
+  }
+
+  return false;
+}
+
+bool charinfo::contains(symbol s, bool already_called)
+{
+  if (already_called) {
+    warning(WARN_SYNTAX,
+	    "cyclic nested class detected while processing symbol %1",
+	    s.contents());
+    return false;
+  }
+  const char *unicode = glyph_name_to_unicode(s.contents());
+  if (unicode != NULL && strchr(unicode, '_') == NULL) {
+    char *ignore;
+    int c = (int)strtol(unicode, &ignore, 16);
+    return contains(c, true);
+  }
+  else
+    return false;
+}
+
+bool charinfo::contains(charinfo *, bool)
+{
+  // TODO
+  return false;
 }
 
 symbol UNNAMED_SYMBOL("---");
