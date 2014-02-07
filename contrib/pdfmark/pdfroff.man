@@ -7,11 +7,11 @@ pdfroff.1
 
 File position: <groff-source>/contrib/pdfmark/pdfroff.man
 
-Last update: 5 Jan 2009
+Last update: 23-Dec-2010
 
 This file is part of groff, the GNU roff type-setting system.
 
-Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006, 2007, 2009, 2010, Free Software Foundation, Inc.
 written by Keith Marshall <keith.d.marshall@ntlworld.com>
 
 Permission is granted to copy, distribute and/or modify this document
@@ -521,7 +521,7 @@ defaults to
 .IP
 .I
 .ad l
-.NH gs \-dBATCH \-dQUIET \-dNOPAUSE \-sDEVICE=pdfwrite \-sOutputFile=\-
+.NH gs \-dBATCH \-dQUIET \-dNOPAUSE \-dSAFER \-sDEVICE=pdfwrite \-sOutputFile=\-
 .ad
 .RE
 .
@@ -645,10 +645,24 @@ normally, the final output file should be named
 .P
 Temporary files, created by
 .BR pdfroff ,
-are placed in the directory specified by environment variables (see
-section
-.BR ENVIRONMENT ),
-and named according to the convention
+are placed in the file system hierarchy,
+in or below the directory specified by environment variables
+(see section
+.BR ENVIRONMENT ).
+If
+.BR mktemp (@MAN1EXT@)
+is available,
+it is invoked to create a private subdirectory of
+the nominated temporary files directory,
+(with subdirectory name derived from the template
+.BR pdfroff-XXXXXXXXXX );
+if this subdirectory is successfully created,
+the temporary files will be placed within it,
+otherwise they will be placed directly in the directory
+nominated in the environment.
+.P
+All temporary files themselves
+are named according to the convention
 .BI pdf $$ .*\c
 \&, where
 .I $$

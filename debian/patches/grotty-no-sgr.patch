@@ -1,0 +1,36 @@
+Description: Only emit a single backspace for bold/underline in no-SGR mode
+ less (at least) backspaces over a character at a time.
+Author: Colin Watson <cjwatson@debian.org>
+Forwarded: http://lists.gnu.org/archive/html/bug-groff/2011-01/msg00003.html
+Last-Update: 2011-01-10
+
+Index: b/src/devices/grotty/tty.cpp
+===================================================================
+--- a/src/devices/grotty/tty.cpp
++++ b/src/devices/grotty/tty.cpp
+@@ -311,11 +311,8 @@
+     if (!w)
+       warning("can't underline zero-width character");
+     else {
+-      int n = w / font::hor;
+-      for (int i = 0; i < n; i++)
+-	putchar('_');
+-      for (int j = 0; j < n; j++)
+-	putchar('\b');
++      putchar('_');
++      putchar('\b');
+     }
+   }
+   else {
+@@ -337,10 +334,8 @@
+     if (!w)
+       warning("can't print zero-width character in bold");
+     else {
+-      int n = w / font::hor;
+       put_char(c);
+-      for (int i = 0; i < n; i++)
+-	putchar('\b');
++      putchar('\b');
+     }
+   }
+   else {

@@ -1,0 +1,26 @@
+Description: Adjust paths in groff_mom(7)
+Author: Colin Watson <cjwatson@debian.org>
+Bug-Debian: http://bugs.debian.org/611904
+Forwarded: no
+Last-Update: 2012-06-22
+
+Index: b/contrib/mom/groff_mom.man
+===================================================================
+--- a/contrib/mom/groff_mom.man
++++ b/contrib/mom/groff_mom.man
+@@ -79,13 +79,12 @@
+ \[en] a wrapper file that calls om.tmac directly.
+ .
+ .TP
+-.UR @HTMLDOCDIR@/\:momdoc/\:toc.html
+-@HTMLDOCDIR@/\:momdoc/\:toc.html
++.UR @HTMLDOCDIR@/\:mom/\:toc.html
+ .UE
+ \[en] entry point to the HTML documentation
+ .
+ .TP
+-.B @EXAMPLEDIR@/*.mom
++.B @EXAMPLEDIR@/mom/*
+ \[en] example files using mom
+ .
+ .

@@ -5,7 +5,7 @@ col_rowspan_colors.roff
 
 This file is part of groff, the GNU roff type-setting system.
 
-Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -23,7 +23,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 ..
 .
+.if !d sopath \
+.  ds sopath
+.
+.so \*[sopath]examples/common.roff
+.
 .time start
+.
 .de color#
 .nr # +1
 .random#
@@ -57,7 +63,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .   color#
 .   as html " \\*[help] ".TR height=\\nW" ".TD colspan=\\nI bgc=c\\n#"
 .\}
-.P1 \\*[html]
+.t*P1 \\*[html]
 ..
 .
 .pv 1.2 1.2 "" x

@@ -5,7 +5,7 @@ font_x.roff
 
 This file is part of groff, the GNU roff type-setting system.
 
-Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -33,6 +33,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .\"	**		specified string `fontpath'.			**
 .\"	**		without arg: glyphs and codes of active font.	**
 .\"	******************************************************************
+.
+.if !d sopath \
+.  ds sopath
+.
+.so \*[sopath]examples/common.roff
 .
 .time start
 .
@@ -67,7 +72,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .        continue
 .    \}
 .
-.    index "\\*[*f]" \\*[*$1]
+.    t*index "\\*[*f]" \\*[*$1]
 .
 .    ie (\\n[.y] > 18) \
 .      if !F \\*[*$1] \{\
@@ -75,7 +80,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .        continue
 .      \}
 .    el \{\
-.      if !\\n[index] \{\
+.      if !\\n[t*index] \{\
 .        tm \\n[.F]:\\n[.c]: Font \\*[*$1] not found.
 .        continue
 .      \}

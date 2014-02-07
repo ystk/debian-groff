@@ -1,3 +1,64 @@
+Mon Dec 27 09:39:20 2010  Werner LEMBERG  <wl@gnu.org>
+
+	* groff_mm.man: Fix indentation.
+
+Thu Jun 24 12:43:27 2010  Tadziu Hoffmann  <hoffmann@usm.uni-muenchen.de>
+
+	* m.tmac (misc@pop-nr): Fix assignment.
+	Reported as
+	http://lists.gnu.org/archive/html/groff/2010-06/msg00096.html
+
+Sat Jun  5 08:06:21 2010  Larry Jones <lawrence.jones@siemens.com>
+
+	* m.tmac (\*[BU]): Always define.
+
+Sat Jun  5 08:00:10 2010  Larry Jones <lawrence.jones@siemens.com>
+
+	Improve compatibility.
+
+	* m.tmac (}b, }f, }p): Define aliases for orthogonality with the
+	already available }t, }e, and }o for page headers.
+
+Wed Jun  2 16:03:39 2010  Larry Jones <lawrence.jones@siemens.com>
+
+	Fix .EOP handling and non-numeric format of \n[P].
+
+	* m.tmac (pg@header): Set `.af' temporarily to numeric format.
+	(pg@print-footer): Disable vertical traps for call to .EOP also.
+
+Wed Jun  2 16:03:39 2010  Larry Jones <lawrence.jones@siemens.com>
+
+	* m.tmac (toc@entry): Use MM page number (\nP).
+
+Sun May 30 07:14:15 2010  Larry Jones  <lawrence.jones@siemens.com>
+
+	* m.tmac (P, nP): Fix handling of short paragraphs.
+	Otherwise,
+
+	  .H 1 Bug
+	  .P
+	  one
+	  .P
+	  two
+	  .P
+	  three
+
+	results in:
+
+	  1.  Bug
+
+	  one two three
+
+	whereas it should, of course, produce:
+
+	  1.  Bug
+
+	  one
+
+	  two
+
+	  three
+
 Sat Jan  3 08:55:15 2009  Werner LEMBERG  <wl@gnu.org>
 
 	* groff_mm.man: Use new `x' table modifier for all tables which use
@@ -792,7 +853,7 @@ Sun Jan 1 00:00:00 1991 Joergen Haegg (jh at efd.lth.se)
 	* warnings for unimplemented macros
 
 Copyright 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-	  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+	  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
   Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,

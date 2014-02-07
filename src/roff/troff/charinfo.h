@@ -1,5 +1,5 @@
 // -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2006, 2009
+/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2006, 2009, 2010
    Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -18,6 +18,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>. */
 
+#include <vector>
+#include <utility>
+
+extern int class_flag;	// set if there was a call to `.class'
+extern void get_flags();
+
 class macro;
 
 class charinfo : glyph {
@@ -26,7 +32,7 @@ class charinfo : glyph {
   macro *mac;
   unsigned char special_translation;
   unsigned char hyphenation_code;
-  unsigned char flags;
+  unsigned int flags;
   unsigned char ascii_code;
   unsigned char asciify_code;
   char not_found;
@@ -35,16 +41,22 @@ class charinfo : glyph {
   char translate_input;		// non-zero means that asciify_code is
 				// active for .asciify (set by .trin)
   char_mode mode;
+  // Unicode character classes
+  std::vector<std::pair<int, int> > ranges;
+  std::vector<charinfo *> nested_classes;
 public:
   enum {		// Values for the flags bitmask.  See groff
 			// manual, description of the `.cflags' request.
-    ENDS_SENTENCE = 1,
-    BREAK_BEFORE = 2,
-    BREAK_AFTER = 4,
-    OVERLAPS_HORIZONTALLY = 8,
-    OVERLAPS_VERTICALLY = 16,
-    TRANSPARENT = 32,
-    IGNORE_HCODES = 64
+    ENDS_SENTENCE = 0x01,
+    BREAK_BEFORE = 0x02,
+    BREAK_AFTER = 0x04,
+    OVERLAPS_HORIZONTALLY = 0x08,
+    OVERLAPS_VERTICALLY = 0x10,
+    TRANSPARENT = 0x20,
+    IGNORE_HCODES = 0x40,
+    DONT_BREAK_BEFORE = 0x80,
+    DONT_BREAK_AFTER = 0x100,
+    INTER_CHAR_SPACE = 0x200
   };
   enum {
     TRANSLATE_NONE,
@@ -63,9 +75,13 @@ public:
   int can_break_after();
   int transparent();
   int ignore_hcodes();
+  int prohibit_break_before();
+  int prohibit_break_after();
+  int inter_char_space();
   unsigned char get_hyphenation_code();
   unsigned char get_ascii_code();
   unsigned char get_asciify_code();
+  int get_unicode_code();
   void set_hyphenation_code(unsigned char);
   void set_ascii_code(unsigned char);
   void set_asciify_code(unsigned char);
@@ -73,7 +89,8 @@ public:
   int get_translation_input();
   charinfo *get_translation(int = 0);
   void set_translation(charinfo *, int, int);
-  void set_flags(unsigned char);
+  void get_flags();
+  void set_flags(unsigned int);
   void set_special_translation(int, int);
   int get_special_translation(int = 0);
   macro *set_macro(macro *);
@@ -87,6 +104,13 @@ public:
   int is_fallback();
   int is_special();
   symbol *get_symbol();
+  void add_to_class(int);
+  void add_to_class(int, int);
+  void add_to_class(charinfo *);
+  bool is_class();
+  bool contains(int, bool = false);
+  bool contains(symbol, bool = false);
+  bool contains(charinfo *, bool = false);
 };
 
 charinfo *get_charinfo(symbol);
@@ -95,37 +119,72 @@ charinfo *get_charinfo_by_number(int);
 
 inline int charinfo::overlaps_horizontally()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & OVERLAPS_HORIZONTALLY;
 }
 
 inline int charinfo::overlaps_vertically()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & OVERLAPS_VERTICALLY;
 }
 
 inline int charinfo::can_break_before()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & BREAK_BEFORE;
 }
 
 inline int charinfo::can_break_after()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & BREAK_AFTER;
 }
 
 inline int charinfo::ends_sentence()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & ENDS_SENTENCE;
 }
 
 inline int charinfo::transparent()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & TRANSPARENT;
 }
 
 inline int charinfo::ignore_hcodes()
 {
+  if (class_flag)
+    ::get_flags();
   return flags & IGNORE_HCODES;
+}
+
+inline int charinfo::prohibit_break_before()
+{
+  if (class_flag)
+    ::get_flags();
+  return flags & DONT_BREAK_BEFORE;
+}
+
+inline int charinfo::prohibit_break_after()
+{
+  if (class_flag)
+    ::get_flags();
+  return flags & DONT_BREAK_AFTER;
+}
+
+inline int charinfo::inter_char_space()
+{
+  if (class_flag)
+    ::get_flags();
+  return flags & INTER_CHAR_SPACE;
 }
 
 inline int charinfo::numbered()
@@ -170,7 +229,7 @@ inline unsigned char charinfo::get_asciify_code()
   return (translate_input ? asciify_code : 0);
 }
 
-inline void charinfo::set_flags(unsigned char c)
+inline void charinfo::set_flags(unsigned int c)
 {
   flags = c;
 }
@@ -214,5 +273,30 @@ inline int charinfo::first_time_not_found()
 
 inline symbol *charinfo::get_symbol()
 {
-  return( &nm );
+  return &nm;
+}
+
+inline void charinfo::add_to_class(int c)
+{
+  class_flag = 1;
+  // TODO ranges cumbersome for single characters?
+  ranges.push_back(std::pair<int, int>(c, c));
+}
+
+inline void charinfo::add_to_class(int lo,
+				   int hi)
+{
+  class_flag = 1;
+  ranges.push_back(std::pair<int, int>(lo, hi));
+}
+
+inline void charinfo::add_to_class(charinfo *ci)
+{
+  class_flag = 1;
+  nested_classes.push_back(ci);
+}
+
+inline bool charinfo::is_class()
+{
+  return (!ranges.empty() || !nested_classes.empty());
 }

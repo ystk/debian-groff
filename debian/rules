@@ -1,16 +1,17 @@
 #! /usr/bin/make -f
 build clean install binary-arch binary-indep binary:
-	dh $@
+	dh --builddirectory=debian/build $@
 
 export DH_OPTIONS
 
-CC  = gcc
-CXX = g++
-ifeq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
-CFLAGS = -O2 -g -Wall
-else
-CFLAGS = -g -Wall
-endif
+CPPFLAGS += $(shell dpkg-buildflags --get CPPFLAGS)
+CFLAGS = $(shell dpkg-buildflags --get CFLAGS)
+CFLAGS += -Wall
+CXXFLAGS = $(shell dpkg-buildflags --get CXXFLAGS)
+CXXFLAGS += -Wall
+LDFLAGS = $(shell dpkg-buildflags --get LDFLAGS)
+buildflags := CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
+	      CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 # From Makefile.in
 version  = $(shell cat VERSION)
@@ -31,51 +32,72 @@ ifeq ($(GROFF_X11),no)
   confflags += --without-x
 endif
 
-# We need to take some care to preserve these files in their original state
-# in the source package, as they may get rebuilt or otherwise changed.
-PRESERVE := Makefile \
-	doc/groff.info doc/groff.info-1 doc/groff.info-2 doc/groff.info-3 \
-	src/preproc/eqn/eqn.cpp src/preproc/eqn/eqn_tab.h \
-	src/preproc/pic/pic.cpp src/preproc/pic/pic_tab.h \
-	src/preproc/refer/label.cpp
+DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+DEB_HOST_GNU_TYPE  := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+
+confflags_gnulib = --build=$(DEB_BUILD_GNU_TYPE)
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+  confflags_gnulib += --host=$(DEB_HOST_GNU_TYPE)
+endif
 
 override_dh_auto_configure:
-	set -e; for f in $(PRESERVE); do \
-		if [ ! -f $$(dirname $$f)/clean-$$(basename $$f) ]; then \
-			cp -p $$f $$(dirname $$f)/clean-$$(basename $$f); \
-		fi; \
-	done
 	-rm -f config.log config.cache
-	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)" \
-		PSPRINT=lpr PAGE=A4 \
+	$(buildflags) YACC='bison -y' PSPRINT=lpr PAGE=A4 \
 		dh_auto_configure -- $(confflags) \
 			--with-appresdir=/etc/X11/app-defaults
+	mkdir -p debian/build/src/libs/gnulib
+	cd debian/build/src/libs/gnulib && \
+		$(buildflags) \
+		$(CURDIR)/src/libs/gnulib/configure $(confflags_gnulib)
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+	$(buildflags) YACC='bison -y' PSPRINT=lpr PAGE=A4 \
+		DEB_HOST_GNU_TYPE=$(DEB_BUILD_GNU_TYPE) \
+		dh_auto_configure --builddirectory=debian/build-native -- \
+			$(confflags) \
+			--with-appresdir=/etc/X11/app-defaults
+endif
+
+ifeq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+  cross :=
+else
+  native_tmp := $(CURDIR)/debian/build-native
+  groff_bin_dirs := \
+	$(native_tmp)/src/roff/groff \
+	$(native_tmp)/src/roff/troff \
+	$(native_tmp)/src/preproc/pic \
+	$(native_tmp)/src/preproc/eqn \
+	$(native_tmp)/src/preproc/tbl \
+	$(native_tmp)/src/preproc/grn \
+	$(native_tmp)/src/preproc/refer \
+	$(native_tmp)/src/preproc/soelim \
+	$(native_tmp)/src/preproc/html \
+	$(native_tmp)/src/devices/grops \
+	$(native_tmp)/src/devices/grodvi \
+	$(native_tmp)/src/devices/grotty \
+	$(native_tmp)/src/devices/grolj4 \
+	$(native_tmp)/src/devices/grolbp \
+	$(native_tmp)/src/devices/grohtml
+  empty :=
+  space := $(empty) $(empty)
+  cross := \
+	TROFFBIN=$(native_tmp)/src/roff/troff/troff \
+	GROFFBIN=$(native_tmp)/src/roff/groff/groff \
+	GROFF_BIN_DIR=$(native_tmp)/src/roff/groff \
+	GROFF_BIN_PATH=$(subst $(space),:,$(groff_bin_dirs))
+endif
 
 override_dh_auto_build:
 	touch configure		# avoid autoconf build-dependency
-	$(MAKE) extratmacdirs=/usr/share/groff/tmac \
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+	$(MAKE) -C debian/build-native \
+		extratmacdirs=/usr/share/groff/tmac \
 		docdir=\$${prefix}/share/doc/groff-base
-	GROFF_NO_SGR=1 $(MAKE) -C doc meintro.txt meref.txt pic.txt
-
-override_dh_auto_clean:
-	touch configure		# avoid autoconf build-dependency
-	# doc/Makefile defines the set of cleaned files differently from
-	# doc/Makefile.sub, so bizarrely we need to call this separately.
-	[ ! -f doc/Makefile ] || $(MAKE) -C doc -i extraclean
-	if [ -f Makefile ] && [ -f clean-Makefile ]; then \
-		$(MAKE) -i realclean extraclean; \
-	fi
-
-override_dh_clean:
-	find . -name tags | xargs -r rm -f
-	find . -name '*.cc.combine' | xargs -r rm -f
-	rm -rf contrib/pdfmark/groff-pdfroff.*
-	dh_clean build-groff
-	set -e; for f in $(PRESERVE); do \
-		if [ -f $$(dirname $$f)/clean-$$(basename $$f) ]; then \
-			mv -f $$(dirname $$f)/clean-$$(basename $$f) $$f; \
-		fi; \
-	done
+endif
+	$(MAKE) -C debian/build \
+		extratmacdirs=/usr/share/groff/tmac \
+		docdir=\$${prefix}/share/doc/groff-base $(cross)
+	GROFF_NO_SGR=1 $(MAKE) -C debian/build/doc $(cross) \
+		meintro.txt meref.txt pic.txt
 
 override_dh_auto_install:
 	dh_auto_install -- \

@@ -68,7 +68,7 @@ Index: b/man/groff_diff.man
 ===================================================================
 --- a/man/groff_diff.man
 +++ b/man/groff_diff.man
-@@ -22,6 +22,10 @@
+@@ -23,6 +23,10 @@
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..

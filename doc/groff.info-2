@@ -1,10 +1,10 @@
 This is groff.info, produced by makeinfo version 4.13 from
 ./groff.texinfo.
 
-This manual documents GNU `troff' version 1.20.1.
+This manual documents GNU `troff' version 1.21.
 
    Copyright (C) 1994-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2009 Free Software Foundation, Inc.
+2008, 2009, 2010 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -22,6 +22,324 @@ INFO-DIR-SECTION Typesetting
 START-INFO-DIR-ENTRY
 * Groff: (groff).               The GNU troff document formatting system.
 END-INFO-DIR-ENTRY
+
+
+File: groff.info,  Node: Writing Macros,  Next: Page Motions,  Prev: Conditionals and Loops,  Up: gtroff Reference
+
+5.21 Writing Macros
+===================
+
+A "macro" is a collection of text and embedded commands which can be
+invoked multiple times.  Use macros to define common operations.  *Note
+Strings::, for a (limited) alternative syntax to call macros.
+
+ -- Request: .de name [end]
+ -- Request: .de1 name [end]
+ -- Request: .dei name [end]
+ -- Request: .dei1 name [end]
+     Define a new macro named NAME.  `gtroff' copies subsequent lines
+     (starting with the next one) into an internal buffer until it
+     encounters the line `..' (two dots).  The optional second argument
+     to `de' changes this to a macro to `.END'.
+
+     There can be whitespace after the first dot in the line containing
+     the ending token (either `.' or macro `END').  Don't insert a tab
+     character immediately after the `..', otherwise it isn't
+     recognized as the end-of-macro symbol.(1) (*note Writing
+     Macros-Footnote-1::)
+
+     Here a small example macro called `P' which causes a break and
+     inserts some vertical space.  It could be used to separate
+     paragraphs.
+
+
+          .de P
+          .  br
+          .  sp .8v
+          ..
+
+     The following example defines a macro within another.  Remember
+     that expansion must be protected twice; once for reading the macro
+     and once for executing.
+
+
+          \# a dummy macro to avoid a warning
+          .de end
+          ..
+          .
+          .de foo
+          .  de bar end
+          .    nop \f[B]Hallo \\\\$1!\f[]
+          .  end
+          ..
+          .
+          .foo
+          .bar Joe
+              => Hallo Joe!
+
+     Since `\f' has no expansion, it isn't necessary to protect its
+     backslash.  Had we defined another macro within `bar' which takes a
+     parameter, eight backslashes would be necessary before `$1'.
+
+     The `de1' request turns off compatibility mode while executing the
+     macro.  On entry, the current compatibility mode is saved and
+     restored at exit.
+
+
+          .nr xxx 12345
+          .
+          .de aa
+          The value of xxx is \\n[xxx].
+          ..
+          .de1 bb
+          The value of xxx ix \\n[xxx].
+          ..
+          .
+          .cp 1
+          .
+          .aa
+              => warning: number register `[' not defined
+              => The value of xxx is 0xxx].
+          .bb
+              => The value of xxx ix 12345.
+
+     The `dei' request defines a macro indirectly.  That is, it expands
+     strings whose names are NAME or END before performing the append.
+
+     This:
+
+
+          .ds xx aa
+          .ds yy bb
+          .dei xx yy
+
+     is equivalent to:
+
+
+          .de aa bb
+
+     The `dei1' request is similar to `dei' but with compatibility mode
+     switched off during execution of the defined macro.
+
+     If compatibility mode is on, `de' (and `dei') behave similar to
+     `de1' (and `dei1'): A `compatibility save' token is inserted at
+     the beginning, and a `compatibility restore' token at the end,
+     with compatibility mode switched on during execution.  *Note
+     Gtroff Internals::, for more information on switching
+     compatibility mode on and off in a single document.
+
+     Using `trace.tmac', you can trace calls to `de' and `de1'.
+
+     Note that macro identifiers are shared with identifiers for
+     strings and diversions.
+
+     *Note the description of the `als' request: als, for possible
+     pitfalls if redefining a macro which has been aliased.
+
+ -- Request: .am name [end]
+ -- Request: .am1 name [end]
+ -- Request: .ami name [end]
+ -- Request: .ami1 name [end]
+     Works similarly to `de' except it appends onto the macro named
+     NAME.  So, to make the previously defined `P' macro actually do
+     indented instead of block paragraphs, add the necessary code to the
+     existing macro like this:
+
+
+          .am P
+          .ti +5n
+          ..
+
+     The `am1' request turns off compatibility mode while executing the
+     appended macro piece.  To be more precise, a "compatibility save"
+     input token is inserted at the beginning of the appended code, and
+     a "compatibility restore" input token at the end.
+
+     The `ami' request appends indirectly, meaning that `gtroff'
+     expands strings whose names are NAME or END before performing the
+     append.
+
+     The `ami1' request is similar to `ami' but compatibility mode is
+     switched off during execution of the defined macro.
+
+     Using `trace.tmac', you can trace calls to `am' and `am1'.
+
+   *Note Strings::, for the `als' and `rn' request to create an alias
+and rename a macro, respectively.
+
+   The `de', `am', `di', `da', `ds', and `as' requests (together with
+its variants) only create a new object if the name of the macro,
+diversion or string diversion is currently undefined or if it is
+defined to be a request; normally they modify the value of an existing
+object.
+
+ -- Request: .return [anything]
+     Exit a macro, immediately returning to the caller.
+
+     If called with an argument, exit twice, namely the current macro
+     and the macro one level higher.  This is used to define a wrapper
+     macro for `return' in `trace.tmac'.
+
+* Menu:
+
+* Copy-in Mode::
+* Parameters::
+
+
+File: groff.info,  Node: Writing Macros-Footnotes,  Up: Writing Macros
+
+   (1) While it is possible to define and call a macro `.' with
+
+
+     .de .
+     .  tm foo
+     ..
+     .
+     ..    \" This calls macro `.'!
+
+you can't use this as the end-of-macro macro: during a macro definition,
+`..' is never handled as a call to `.', even if you say `.de foo .'
+explicitly.
+
+
+File: groff.info,  Node: Copy-in Mode,  Next: Parameters,  Prev: Writing Macros,  Up: Writing Macros
+
+5.21.1 Copy-in Mode
+-------------------
+
+When `gtroff' reads in the text for a macro, string, or diversion, it
+copies the text (including request lines, but excluding escapes) into
+an internal buffer.  Escapes are converted into an internal form, except
+for `\n', `\$', `\*', `\\' and `\<RET>' which are evaluated and
+inserted into the text where the escape was located.  This is known as
+"copy-in" mode or "copy" mode.
+
+   What this means is that you can specify when these escapes are to be
+evaluated (either at copy-in time or at the time of use) by insulating
+the escapes with an extra backslash.  Compare this to the `\def' and
+`\edef' commands in TeX.
+
+   The following example prints the numbers 20 and 10:
+
+
+     .nr x 20
+     .de y
+     .nr x 10
+     \&\nx
+     \&\\nx
+     ..
+     .y
+
+
+File: groff.info,  Node: Parameters,  Prev: Copy-in Mode,  Up: Writing Macros
+
+5.21.2 Parameters
+-----------------
+
+The arguments to a macro or string can be examined using a variety of
+escapes.
+
+ -- Register: \n[.$]
+     The number of arguments passed to a macro or string.  This is a
+     read-only number register.
+
+     Note that the `shift' request can change its value.
+
+   Any individual argument can be retrieved with one of the following
+escapes:
+
+ -- Escape: \$n
+ -- Escape: \$(nn
+ -- Escape: \$[nnn]
+     Retrieve the Nth, NNth or NNNth argument.  As usual, the first
+     form only accepts a single number (larger than zero), the second a
+     two-digit number (larger or equal to 10), and the third any
+     positive integer value (larger than zero).  Macros and strings can
+     have an unlimited number of arguments.  Note that due to copy-in
+     mode, use two backslashes on these in actual use to prevent
+     interpolation until the macro is actually invoked.
+
+ -- Request: .shift [n]
+     Shift the arguments 1 position, or as many positions as specified
+     by its argument.  After executing this request, argument I becomes
+     argument I-N; arguments 1 to N are no longer available.  Shifting
+     by negative amounts is currently undefined.
+
+     The register `.$' is adjusted accordingly.
+
+ -- Escape: \$*
+ -- Escape: \$@
+     In some cases it is convenient to use all of the arguments at once
+     (for example, to pass the arguments along to another macro).  The
+     `\$*' escape concatenates all the arguments separated by spaces.
+     A similar escape is `\$@', which concatenates all the arguments
+     with each surrounded by double quotes, and separated by spaces.
+     If not in compatibility mode, the input level of double quotes is
+     preserved (see *note Request and Macro Arguments::).
+
+ -- Escape: \$^
+     Handle the parameters of a macro as if they were an argument to the
+     `ds' or similar requests.
+
+
+          .de foo
+          .  tm $1=`\\$1'
+          .  tm $2=`\\$2'
+          .  tm $*=`\\$*'
+          .  tm $@=`\\$@'
+          .  tm $^=`\\$^'
+          ..
+          .foo " This is a "test"
+              => $1=` This is a '
+              => $2=`test"'
+              => $*=` This is a  test"'
+              => $@=`" This is a " "test""'
+              => $^=`" This is a "test"'
+
+     This escape is useful mainly for macro packages like `trace.tmac'
+     which redefines some requests and macros for debugging purposes.
+
+ -- Escape: \$0
+     The name used to invoke the current macro.  The `als' request can
+     make a macro have more than one name.
+
+     If a macro is called as a string (within another macro), the value
+     of `\$0' isn't changed.
+
+
+          .de foo
+          .  tm \\$0
+          ..
+          .als foo bar
+          .
+
+
+          .de aaa
+          .  foo
+          ..
+          .de bbb
+          .  bar
+          ..
+          .de ccc
+          \\*[foo]\\
+          ..
+          .de ddd
+          \\*[bar]\\
+          ..
+          .
+
+
+          .aaa
+              => foo
+          .bbb
+              => bar
+          .ccc
+              => ccc
+          .ddd
+              => ddd
+
+
+   *Note Request and Macro Arguments::.
 
 
 File: groff.info,  Node: Page Motions,  Next: Drawing Requests,  Prev: Writing Macros,  Up: gtroff Reference
@@ -551,6 +869,7 @@ trap is "sprung" if the associated macro is executed.
 * Diversion Traps::
 * Input Line Traps::
 * Blank Line Traps::
+* Leading Spaces Traps::
 * End-of-input Traps::
 
 
@@ -788,7 +1107,7 @@ File: groff.info,  Node: Input Line Traps,  Next: Blank Line Traps,  Prev: Diver
      number of already processed lines.
 
 
-File: groff.info,  Node: Blank Line Traps,  Next: End-of-input Traps,  Prev: Input Line Traps,  Up: Traps
+File: groff.info,  Node: Blank Line Traps,  Next: Leading Spaces Traps,  Prev: Input Line Traps,  Up: Traps
 
 5.24.4 Blank Line Traps
 -----------------------
@@ -798,9 +1117,41 @@ File: groff.info,  Node: Blank Line Traps,  Next: End-of-input Traps,  Prev: Inp
      a blank line in the input file.
 
 
-File: groff.info,  Node: End-of-input Traps,  Prev: Blank Line Traps,  Up: Traps
+File: groff.info,  Node: Leading Spaces Traps,  Next: End-of-input Traps,  Prev: Blank Line Traps,  Up: Traps
 
-5.24.5 End-of-input Traps
+5.24.5 Leading Spaces Traps
+---------------------------
+
+ -- Request: .lsm macro
+ -- Register: \n[lsn]
+ -- Register: \n[lss]
+     Set a leading spaces trap.  `gtroff' executes MACRO when it
+     encounters leading spaces in an input line; the implicit line break
+     which normally happens in this case is suppressed.  A line
+     consisting of spaces only, however, is treated as an empty line,
+     possibly subject to an empty line macro set with the `blm' request.
+
+     Leading spaces are removed from the input line before calling the
+     leading spaces macro.  The number of removed spaces is stored in
+     register `lsn'; the horizontal space which would be emitted if
+     there was no leading space macro is stored in register `lss'.
+     Note that `lsn' and `lss' are available even if no leading space
+     macro has been set.
+
+     The first thing a leading space macro sees is a token.  However,
+     some escapes like `\f' or `\m' are handled on the fly (see *note
+     Gtroff Internals::, for a complete list) without creating a token
+     at all.  Consider that a line starts with two spaces followed by
+     `\fIfoo'.  While skipping the spaces `\fI' is handled too so that
+     groff's current font is properly set to `I', but the leading space
+     macro only sees `foo', without the preceding `\fI'.  If the macro
+     should see the font escape you have to `protect' it with something
+     which creates a token, for example with `\&\fIfoo'.
+
+
+File: groff.info,  Node: End-of-input Traps,  Prev: Leading Spaces Traps,  Up: Traps
+
+5.24.6 End-of-input Traps
 -------------------------
 
  -- Request: .em macro
@@ -813,8 +1164,9 @@ File: groff.info,  Node: End-of-input Traps,  Prev: Blank Line Traps,  Up: Traps
 
 
           .de approval
-          .  ne 5v
-          .  sp |(\\n[.t] - 6v)
+          \c
+          .  ne 3v
+          .  sp (\\n[.t]u - 3v)
           .  in +4i
           .  lc _
           .  br
@@ -825,6 +1177,54 @@ File: groff.info,  Node: End-of-input Traps,  Prev: Blank Line Traps,  Up: Traps
           .
           .em approval
 
+     The `\c' in the above example needs explanation.  For historical
+     reasons (and for compatibility with AT&T `troff'), the end macro
+     exits as soon as it causes a page break and no remaining data is
+     in the partially collected line.
+
+     Let us assume that there is no `\c' in the above `approval' macro,
+     and that the page is full and has been ended with, say, a `br'
+     request.  The `ne' request now causes the start of a new page,
+     which in turn makes `troff' exit immediately for the reasons just
+     described.  In most situations this is not intended.
+
+     To always force processing the whole end macro independently of
+     this behaviour it is thus advisable to insert something which
+     starts an empty partially filled line (`\c') whenever there is a
+     chance that a page break can happen.  In the above example, the
+     call of the `ne' request assures that the remaining code stays on
+     the same page, so we have to insert `\c' only once.
+
+     The next example shows how to append three lines, then starting a
+     new page unconditionally.  Since `.ne 1' doesn't give the desired
+     effect - there is always one line available or we are already at
+     the beginning of the next page - we temporarily increase the page
+     length by one line so that we can use `.ne 2'.
+
+
+          .de EM
+          .pl +1v
+          \c
+          .ne 2
+          line one
+          .br
+          \c
+          .ne 2
+          line two
+          .br
+          \c
+          .ne 2
+          line three
+          .br
+          .pl -1v
+          \c
+          'bp
+          ..
+          .em EM
+
+     Note that this specific feature affects only the first potential
+     page break caused by the end macro; further page breaks emitted by
+     the end macro are handled normally.
 
 
 File: groff.info,  Node: Diversions,  Next: Environments,  Prev: Traps,  Up: gtroff Reference
@@ -1379,7 +1779,9 @@ File: groff.info,  Node: I/O,  Next: Postprocessor Access,  Prev: Colors,  Up: g
      the specified FILE in the same directories as macro files for the
      the `-m' command line option.  If the file name to be included has
      the form `NAME.tmac' and it isn't found, `mso' tries to include
-     `tmac.NAME' and vice versa.
+     `tmac.NAME' and vice versa.  If the file does not exist, a warning
+     of type `file' is emitted.  *Note Debugging::, for information
+     about warnings.
 
  -- Request: .trf file
  -- Request: .cf file
@@ -2204,6 +2606,11 @@ by the `.warn' register.
 `524288'
      Color related warnings.
 
+`file'
+`1048576'
+     Missing files.  The `mso' request gives this warning when the
+     requested macro file does not exist.  This is enabled by default.
+
 `all'
      All warnings except `di', `mac' and `reg'.  It is intended that
      this covers all warnings that are useful with traditional macro
@@ -2369,6 +2776,7 @@ which are freely available.
 * grap::
 * grefer::
 * gsoelim::
+* preconv::
 
 
 File: groff.info,  Node: geqn,  Next: gtbl,  Prev: Preprocessors,  Up: Preprocessors
@@ -2462,7 +2870,7 @@ File: groff.info,  Node: Invoking grefer,  Prev: grefer,  Up: grefer
 -----------------------
 
 
-File: groff.info,  Node: gsoelim,  Prev: grefer,  Up: Preprocessors
+File: groff.info,  Node: gsoelim,  Next: preconv,  Prev: grefer,  Up: Preprocessors
 
 6.7 `gsoelim'
 =============
@@ -2475,6 +2883,22 @@ File: groff.info,  Node: gsoelim,  Prev: grefer,  Up: Preprocessors
 File: groff.info,  Node: Invoking gsoelim,  Prev: gsoelim,  Up: gsoelim
 
 6.7.1 Invoking `gsoelim'
+------------------------
+
+
+File: groff.info,  Node: preconv,  Prev: gsoelim,  Up: Preprocessors
+
+6.8 `preconv'
+=============
+
+* Menu:
+
+* Invoking preconv::
+
+
+File: groff.info,  Node: Invoking preconv,  Prev: preconv,  Up: preconv
+
+6.8.1 Invoking `preconv'
 ------------------------
 
 
@@ -2594,6 +3018,27 @@ File: groff.info,  Node: grohtml,  Next: gxditview,  Prev: grolbp,  Up: Output D
 
 7.7 `grohtml'
 =============
+
+The `grohtml' front end (which consists of a preprocessor,
+`pre-grohtml', and a device driver, `post-grohtml') translates the
+output of GNU `troff' to HTML.  Users should always invoke `grohtml'
+via the `groff' command with a `\-Thtml' option.  If no files are
+given, `grohtml' will read the standard input.  A filename of `-' will
+also cause `grohtml' to read the standard input.  HTML output is
+written to the standard output.  When `grohtml' is run by `groff',
+options can be passed to `grohtml' using `groff''s `-P' option.
+
+   `grohtml' invokes `groff' twice.  In the first pass, pictures,
+equations, and tables are rendered using the `ps' device, and in the
+second pass HTML output is generated by the `html' device.
+
+   `grohtml' always writes output in `UTF-8' encoding and has built-in
+entities for all non-composite unicode characters.  In spite of this,
+`groff' may issue warnings about unknown special characters if they
+can't be found during the first pass.  Such warnings can be safely
+ignored unless the special characters appear inside a table or
+equation, in which case glyphs for these characters must be defined for
+the `ps' device as well.
 
 * Menu:
 
@@ -4298,7 +4743,7 @@ Requests appear without the leading control character (normally either
 * ad:                                    Manipulating Filling and Adjusting.
                                                               (line  52)
 * af:                                    Assigning Formats.   (line  12)
-* aln:                                   Setting Registers.   (line  79)
+* aln:                                   Setting Registers.   (line 114)
 * als:                                   Strings.             (line 237)
 * am:                                    Writing Macros.      (line 114)
 * am1:                                   Writing Macros.      (line 115)
@@ -4324,12 +4769,13 @@ Requests appear without the leading control character (normally either
                                                               (line  10)
 * ce:                                    Manipulating Filling and Adjusting.
                                                               (line 189)
-* cf:                                    I/O.                 (line  49)
+* cf:                                    I/O.                 (line  51)
 * cflags:                                Using Symbols.       (line 242)
 * ch:                                    Page Location Traps. (line 119)
-* char:                                  Using Symbols.       (line 303)
+* char:                                  Using Symbols.       (line 329)
 * chop:                                  Strings.             (line 276)
-* close:                                 I/O.                 (line 239)
+* class:                                 Character Classes.   (line  12)
+* close:                                 I/O.                 (line 241)
 * color:                                 Colors.              (line   7)
 * composite:                             Using Symbols.       (line 195)
 * continue:                              while.               (line  77)
@@ -4368,13 +4814,13 @@ Requests appear without the leading control character (normally either
 * ex:                                    Debugging.           (line  45)
 * fam:                                   Font Families.       (line  19)
 * fc:                                    Fields.              (line  18)
-* fchar:                                 Using Symbols.       (line 304)
+* fchar:                                 Using Symbols.       (line 330)
 * fcolor:                                Colors.              (line  85)
 * fi:                                    Manipulating Filling and Adjusting.
                                                               (line  30)
 * fl:                                    Debugging.           (line  89)
 * fp:                                    Font Positions.      (line  11)
-* fschar:                                Using Symbols.       (line 305)
+* fschar:                                Using Symbols.       (line 331)
 * fspecial:                              Special Fonts.       (line  18)
 * ft <1>:                                Font Positions.      (line  58)
 * ft:                                    Changing Fonts.      (line   7)
@@ -4384,9 +4830,9 @@ Requests appear without the leading control character (normally either
 * hc:                                    Manipulating Hyphenation.
                                                               (line 105)
 * hcode:                                 Manipulating Hyphenation.
-                                                              (line 174)
+                                                              (line 176)
 * hla:                                   Manipulating Hyphenation.
-                                                              (line 252)
+                                                              (line 254)
 * hlm:                                   Manipulating Hyphenation.
                                                               (line  45)
 * hpf:                                   Manipulating Hyphenation.
@@ -4400,9 +4846,9 @@ Requests appear without the leading control character (normally either
 * hy:                                    Manipulating Hyphenation.
                                                               (line   9)
 * hym:                                   Manipulating Hyphenation.
-                                                              (line 208)
+                                                              (line 210)
 * hys:                                   Manipulating Hyphenation.
-                                                              (line 223)
+                                                              (line 225)
 * ie:                                    if-else.             (line  27)
 * if:                                    if-else.             (line  10)
 * ig:                                    Comments.            (line  67)
@@ -4420,6 +4866,8 @@ Requests appear without the leading control character (normally either
 * ll:                                    Line Layout.         (line 145)
 * ls:                                    Manipulating Spacing.
                                                               (line  69)
+* lsm:                                   Leading Spaces Traps.
+                                                              (line   7)
 * lt:                                    Page Layout.         (line  60)
 * mc:                                    Miscellaneous.       (line  76)
 * mk:                                    Page Motions.        (line  10)
@@ -4440,14 +4888,14 @@ Requests appear without the leading control character (normally either
                                                               (line  32)
 * ns:                                    Manipulating Spacing.
                                                               (line 131)
-* nx:                                    I/O.                 (line  83)
-* open:                                  I/O.                 (line 207)
-* opena:                                 I/O.                 (line 208)
+* nx:                                    I/O.                 (line  85)
+* open:                                  I/O.                 (line 209)
+* opena:                                 I/O.                 (line 210)
 * os:                                    Page Control.        (line  55)
 * output:                                Diversions.          (line 185)
 * pc:                                    Page Layout.         (line  89)
 * pev:                                   Debugging.           (line  64)
-* pi:                                    I/O.                 (line 147)
+* pi:                                    I/O.                 (line 149)
 * pl:                                    Page Layout.         (line  10)
 * pm:                                    Debugging.           (line  68)
 * pn:                                    Page Layout.         (line  77)
@@ -4458,22 +4906,22 @@ Requests appear without the leading control character (normally either
 * pso:                                   I/O.                 (line  30)
 * ptr:                                   Debugging.           (line  83)
 * pvs:                                   Changing Type Sizes. (line 133)
-* rchar:                                 Using Symbols.       (line 362)
-* rd:                                    I/O.                 (line  88)
+* rchar:                                 Using Symbols.       (line 388)
+* rd:                                    I/O.                 (line  90)
 * return:                                Writing Macros.      (line 151)
-* rfschar:                               Using Symbols.       (line 363)
+* rfschar:                               Using Symbols.       (line 389)
 * rj:                                    Manipulating Filling and Adjusting.
                                                               (line 238)
 * rm:                                    Strings.             (line 232)
 * rn:                                    Strings.             (line 229)
-* rnn:                                   Setting Registers.   (line  75)
-* rr:                                    Setting Registers.   (line  71)
+* rnn:                                   Setting Registers.   (line 110)
+* rr:                                    Setting Registers.   (line 106)
 * rs:                                    Manipulating Spacing.
                                                               (line 132)
 * rt:                                    Page Motions.        (line  11)
-* schar:                                 Using Symbols.       (line 306)
+* schar:                                 Using Symbols.       (line 332)
 * shc:                                   Manipulating Hyphenation.
-                                                              (line 239)
+                                                              (line 241)
 * shift:                                 Parameters.          (line  30)
 * sizes:                                 Changing Type Sizes. (line  69)
 * so:                                    I/O.                 (line   9)
@@ -4486,7 +4934,7 @@ Requests appear without the leading control character (normally either
 * sty:                                   Font Families.       (line  60)
 * substring:                             Strings.             (line 201)
 * sv:                                    Page Control.        (line  54)
-* sy:                                    I/O.                 (line 169)
+* sy:                                    I/O.                 (line 171)
 * ta:                                    Tabs and Fields.     (line  14)
 * tc:                                    Tabs and Fields.     (line 139)
 * ti:                                    Line Layout.         (line 117)
@@ -4498,7 +4946,7 @@ Requests appear without the leading control character (normally either
 * tmc:                                   Debugging.           (line  27)
 * tr:                                    Character Translations.
                                                               (line 155)
-* trf:                                   I/O.                 (line  48)
+* trf:                                   I/O.                 (line  50)
 * trin:                                  Character Translations.
                                                               (line 156)
 * trnt:                                  Character Translations.
@@ -4514,9 +4962,9 @@ Requests appear without the leading control character (normally either
 * warnscale:                             Debugging.           (line 131)
 * wh:                                    Page Location Traps. (line  29)
 * while:                                 while.               (line  10)
-* write:                                 I/O.                 (line 219)
-* writec:                                I/O.                 (line 220)
-* writem:                                I/O.                 (line 230)
+* write:                                 I/O.                 (line 221)
+* writec:                                I/O.                 (line 222)
+* writem:                                I/O.                 (line 232)
 
 
 File: groff.info,  Node: Escape Index,  Next: Operator Index,  Prev: Request Index,  Up: Top
@@ -4568,7 +5016,7 @@ printing glyph X.
 * \a:                                    Leaders.             (line  18)
 * \A:                                    Identifiers.         (line  55)
 * \b:                                    Drawing Requests.    (line 239)
-* \B:                                    Expressions.         (line  66)
+* \B:                                    Expressions.         (line  84)
 * \C:                                    Using Symbols.       (line 189)
 * \c:                                    Line Control.        (line  44)
 * \D:                                    Drawing Requests.    (line  71)
@@ -4602,7 +5050,7 @@ printing glyph X.
 * \S:                                    Artificial Fonts.    (line  45)
 * \t:                                    Tabs and Fields.     (line  10)
 * \u:                                    Page Motions.        (line 106)
-* \V:                                    I/O.                 (line 257)
+* \V:                                    I/O.                 (line 259)
 * \v:                                    Page Motions.        (line  87)
 * \w:                                    Page Motions.        (line 155)
 * \X:                                    Postprocessor Access.
@@ -4630,21 +5078,21 @@ Anhang D Operator Index
 * !:                                     Expressions.          (line 21)
 * %:                                     Expressions.          (line  8)
 * &:                                     Expressions.          (line 19)
-* (:                                     Expressions.          (line 42)
-* ):                                     Expressions.          (line 42)
+* (:                                     Expressions.          (line 60)
+* ):                                     Expressions.          (line 60)
 * *:                                     Expressions.          (line  8)
 * +:                                     Expressions.          (line  8)
 * -:                                     Expressions.          (line  8)
 * /:                                     Expressions.          (line  8)
 * <:                                     Expressions.          (line 15)
 * <=:                                    Expressions.          (line 15)
-* <?:                                    Expressions.          (line 27)
+* <?:                                    Expressions.          (line 45)
 * <colon>:                               Expressions.          (line 19)
 * =:                                     Expressions.          (line 15)
 * ==:                                    Expressions.          (line 15)
 * >:                                     Expressions.          (line 15)
 * >=:                                    Expressions.          (line 15)
-* >?:                                    Expressions.          (line 27)
+* >?:                                    Expressions.          (line 45)
 
 
 File: groff.info,  Node: Register Index,  Next: Macro Index,  Prev: Operator Index,  Up: Top
@@ -4663,18 +5111,18 @@ length can be accessed as `\n[xxx]'.
  [index ]
 * Menu:
 
-* $$:                                    Built-in Registers.  (line  96)
+* $$:                                    Built-in Registers.  (line 100)
 * % <1>:                                 Page Control.        (line  10)
 * %:                                     Page Layout.         (line  89)
 * .$:                                    Parameters.          (line  10)
 * .a:                                    Manipulating Spacing.
                                                               (line  90)
-* .A:                                    Built-in Registers.  (line 103)
+* .A:                                    Built-in Registers.  (line 107)
 * .b:                                    Artificial Fonts.    (line  98)
 * .br:                                   Requests.            (line  58)
 * .C:                                    Implementation Differences.
                                                               (line  25)
-* .c:                                    Built-in Registers.  (line  73)
+* .c:                                    Built-in Registers.  (line  77)
 * .cdp:                                  Environments.        (line  96)
 * .ce:                                   Manipulating Filling and Adjusting.
                                                               (line 190)
@@ -4688,12 +5136,12 @@ length can be accessed as `\n[xxx]'.
 * .fam:                                  Font Families.       (line  20)
 * .fn:                                   Font Families.       (line  24)
 * .fp:                                   Font Positions.      (line  13)
-* .g:                                    Built-in Registers.  (line  99)
+* .g:                                    Built-in Registers.  (line 103)
 * .h:                                    Diversions.          (line  74)
 * .H:                                    Built-in Registers.  (line  15)
 * .height:                               Artificial Fonts.    (line  16)
 * .hla:                                  Manipulating Hyphenation.
-                                                              (line 253)
+                                                              (line 255)
 * .hlc:                                  Manipulating Hyphenation.
                                                               (line  47)
 * .hlm:                                  Manipulating Hyphenation.
@@ -4701,9 +5149,9 @@ length can be accessed as `\n[xxx]'.
 * .hy:                                   Manipulating Hyphenation.
                                                               (line  10)
 * .hym:                                  Manipulating Hyphenation.
-                                                              (line 209)
+                                                              (line 211)
 * .hys:                                  Manipulating Hyphenation.
-                                                              (line 224)
+                                                              (line 226)
 * .i:                                    Line Layout.         (line  94)
 * .in:                                   Line Layout.         (line 120)
 * .int:                                  Line Control.        (line  45)
@@ -4727,9 +5175,9 @@ length can be accessed as `\n[xxx]'.
 * .ns:                                   Manipulating Spacing.
                                                               (line 133)
 * .o:                                    Line Layout.         (line  64)
-* .O:                                    Built-in Registers.  (line 108)
+* .O:                                    Built-in Registers.  (line 112)
 * .p:                                    Page Layout.         (line  13)
-* .P:                                    Built-in Registers.  (line 112)
+* .P:                                    Built-in Registers.  (line 116)
 * .pe:                                   Page Location Traps. (line 152)
 * .pn:                                   Page Layout.         (line  80)
 * .ps:                                   Fractional Type Sizes.
@@ -4737,6 +5185,7 @@ length can be accessed as `\n[xxx]'.
 * .psr:                                  Fractional Type Sizes.
                                                               (line  42)
 * .pvs:                                  Changing Type Sizes. (line 136)
+* .R:                                    Built-in Registers.  (line  18)
 * .rj:                                   Manipulating Filling and Adjusting.
                                                               (line 239)
 * .s:                                    Changing Type Sizes. (line  11)
@@ -4749,27 +5198,30 @@ length can be accessed as `\n[xxx]'.
                                                               (line 136)
 * .sty:                                  Changing Fonts.      (line  11)
 * .t:                                    Page Location Traps. (line 110)
-* .T:                                    Built-in Registers.  (line 118)
+* .T:                                    Built-in Registers.  (line 122)
 * .tabs:                                 Tabs and Fields.     (line  15)
 * .trunc:                                Page Location Traps. (line 140)
 * .u:                                    Manipulating Filling and Adjusting.
                                                               (line  31)
+* .U:                                    Built-in Registers.  (line  22)
 * .v:                                    Changing Type Sizes. (line  87)
-* .V:                                    Built-in Registers.  (line  23)
+* .V:                                    Built-in Registers.  (line  27)
 * .vpt:                                  Page Location Traps. (line  18)
 * .w:                                    Environments.        (line  94)
 * .warn:                                 Debugging.           (line 160)
-* .x:                                    Built-in Registers.  (line  85)
-* .Y:                                    Built-in Registers.  (line  93)
-* .y:                                    Built-in Registers.  (line  89)
+* .x:                                    Built-in Registers.  (line  89)
+* .Y:                                    Built-in Registers.  (line  97)
+* .y:                                    Built-in Registers.  (line  93)
 * .z:                                    Diversions.          (line  66)
 * .zoom:                                 Changing Fonts.      (line  74)
-* c.:                                    Built-in Registers.  (line  74)
+* c.:                                    Built-in Registers.  (line  78)
 * ct:                                    Page Motions.        (line 160)
+* DD [ms]:                               ms Document Control Registers.
+                                                              (line 239)
 * dl:                                    Diversions.          (line  92)
 * dn:                                    Diversions.          (line  91)
-* dw:                                    Built-in Registers.  (line  39)
-* dy:                                    Built-in Registers.  (line  42)
+* dw:                                    Built-in Registers.  (line  43)
+* dy:                                    Built-in Registers.  (line  46)
 * FAM [ms]:                              ms Document Control Registers.
                                                               (line 110)
 * FF [ms]:                               ms Document Control Registers.
@@ -4794,7 +5246,7 @@ length can be accessed as `\n[xxx]'.
                                                               (line  40)
 * HORPHANS [ms]:                         ms Document Control Registers.
                                                               (line 154)
-* hours:                                 Built-in Registers.  (line  35)
+* hours:                                 Built-in Registers.  (line  39)
 * hp:                                    Page Motions.        (line 219)
 * HY [ms]:                               ms Document Control Registers.
                                                               (line 101)
@@ -4802,15 +5254,19 @@ length can be accessed as `\n[xxx]'.
                                                               (line  25)
 * llx:                                   Miscellaneous.       (line 142)
 * lly:                                   Miscellaneous.       (line 143)
-* ln:                                    Built-in Registers.  (line  79)
+* ln:                                    Built-in Registers.  (line  83)
+* lsn:                                   Leading Spaces Traps.
+                                                              (line   8)
+* lss:                                   Leading Spaces Traps.
+                                                              (line   9)
 * LT [ms]:                               ms Document Control Registers.
                                                               (line  32)
 * MINGW [ms] <1>:                        Additional ms Macros.
                                                               (line  28)
 * MINGW [ms]:                            ms Document Control Registers.
                                                               (line 231)
-* minutes:                               Built-in Registers.  (line  31)
-* mo:                                    Built-in Registers.  (line  45)
+* minutes:                               Built-in Registers.  (line  35)
+* mo:                                    Built-in Registers.  (line  49)
 * nl:                                    Page Control.        (line  68)
 * opmaxx:                                Suppressing output.  (line  19)
 * opmaxy:                                Suppressing output.  (line  19)
@@ -4835,18 +5291,18 @@ length can be accessed as `\n[xxx]'.
 * rsb:                                   Page Motions.        (line 159)
 * rst:                                   Page Motions.        (line 158)
 * sb:                                    Page Motions.        (line 157)
-* seconds:                               Built-in Registers.  (line  26)
+* seconds:                               Built-in Registers.  (line  30)
 * skw:                                   Page Motions.        (line 162)
 * slimit:                                Debugging.           (line 123)
 * ssc:                                   Page Motions.        (line 161)
 * st:                                    Page Motions.        (line 156)
-* systat:                                I/O.                 (line 170)
+* systat:                                I/O.                 (line 172)
 * urx:                                   Miscellaneous.       (line 144)
 * ury:                                   Miscellaneous.       (line 145)
 * VS [ms]:                               ms Document Control Registers.
                                                               (line  67)
-* year:                                  Built-in Registers.  (line  48)
-* yr:                                    Built-in Registers.  (line  51)
+* year:                                  Built-in Registers.  (line  52)
+* yr:                                    Built-in Registers.  (line  55)
 
 
 File: groff.info,  Node: Macro Index,  Next: String Index,  Prev: Register Index,  Up: Top
@@ -5070,7 +5526,7 @@ length can be accessed as `\*[xxx]'.
                                                               (line  41)
 * . [ms]:                                ms Strings and Special Characters.
                                                               (line  89)
-* .T:                                    Built-in Registers.  (line 123)
+* .T:                                    Built-in Registers.  (line 127)
 * 3 [ms]:                                ms Strings and Special Characters.
                                                               (line 107)
 * 8 [ms]:                                ms Strings and Special Characters.
@@ -5280,9 +5736,9 @@ Anhang J Program and File Index
                                                               (line  12)
 * gtroff:                                Groff Options.       (line   6)
 * hyphen.us:                             Manipulating Hyphenation.
-                                                              (line 161)
+                                                              (line 163)
 * hyphenex.us:                           Manipulating Hyphenation.
-                                                              (line 161)
+                                                              (line 163)
 * latin1.tmac:                           Input Encodings.     (line  14)
 * latin2.tmac:                           Input Encodings.     (line  18)
 * latin9.tmac:                           Input Encodings.     (line  28)
@@ -5298,10 +5754,11 @@ Anhang J Program and File Index
                                                               (line  30)
 * nrchbar:                               Miscellaneous.       (line 111)
 * papersize.tmac:                        Paper Size.          (line  16)
-* perl:                                  I/O.                 (line 180)
+* perl:                                  I/O.                 (line 182)
 * pic:                                   ms Insertions.       (line   7)
-* post-grohtml:                          Groff Options.       (line 165)
-* pre-grohtml:                           Groff Options.       (line 165)
+* post-grohtml:                          Groff Options.       (line 269)
+* pre-grohtml:                           Groff Options.       (line 269)
+* preconv:                               Groff Options.       (line   6)
 * refer:                                 ms Insertions.       (line   7)
 * soelim:                                Debugging.           (line  10)
 * tbl:                                   ms Insertions.       (line   7)
@@ -5310,14 +5767,14 @@ Anhang J Program and File Index
 * troffrc <2>:                           Troff and Nroff Mode.
                                                               (line  24)
 * troffrc <3>:                           Manipulating Hyphenation.
-                                                              (line 161)
+                                                              (line 163)
 * troffrc <4>:                           Paper Size.          (line  16)
-* troffrc:                               Groff Options.       (line  80)
+* troffrc:                               Groff Options.       (line 205)
 * troffrc-end <1>:                       Troff and Nroff Mode.
                                                               (line  24)
 * troffrc-end <2>:                       Manipulating Hyphenation.
-                                                              (line 161)
-* troffrc-end:                           Groff Options.       (line  80)
+                                                              (line 163)
+* troffrc-end:                           Groff Options.       (line 205)
 * tty.tmac:                              Troff and Nroff Mode.
                                                               (line  32)
 

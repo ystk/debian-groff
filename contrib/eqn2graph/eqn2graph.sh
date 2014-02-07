@@ -32,7 +32,7 @@
 #
 # Thus, we pass -U to groff(1), and everything else to convert(1).
 #
-# $Id: eqn2graph.sh,v 1.6 2008/09/29 00:53:29 esr Exp $
+# $Id: eqn2graph.sh,v 1.7 2010/02/25 20:17:13 wl Exp $
 #
 groff_opts=""
 convert_opts=""
@@ -75,7 +75,7 @@ if test -z "$tmp"; then
     { (exit 1); exit 1; }
 fi
 
-trap 'exit_status=$?; rm -rf $tmp && exit $exit_status' 0 2 15 
+trap 'exit_status=$?; rm -rf $tmp && exit $exit_status' EXIT INT TERM
 
 # Here goes:
 # 1. Add .EQ/.EN.

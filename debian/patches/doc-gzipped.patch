@@ -8,7 +8,7 @@ Index: b/contrib/pdfmark/pdfroff.man
 ===================================================================
 --- a/contrib/pdfmark/pdfroff.man
 +++ b/contrib/pdfmark/pdfroff.man
-@@ -783,7 +783,7 @@
+@@ -796,7 +796,7 @@
  in PDF format, in the reference guide
  .BR "\*(lqPortable Document Format Publishing with GNU Troff\*(rq" ,
  included in the installed documentation set as

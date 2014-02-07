@@ -1,3 +1,90 @@
+groff (1.21-9) unstable; urgency=low
+
+  * Pass build flags in a few more places (based on a patch from Simon
+    Ruderich; closes: #653852).
+
+ -- Colin Watson <cjwatson@debian.org>  Mon, 25 Jun 2012 01:32:46 +0100
+
+groff (1.21-8) unstable; urgency=low
+
+  * Use dpkg-buildflags to enable hardening options (based on a patch from
+    Moritz Muehlenhoff; closes: #653852).
+  * Adjust paths in groff_mom(7) (closes: #611904).
+
+ -- Colin Watson <cjwatson@debian.org>  Fri, 22 Jun 2012 13:11:24 +0100
+
+groff (1.21-7) unstable; urgency=low
+
+  * Make groff-base and groff Multi-Arch: foreign.
+  * Support cross-building.
+
+ -- Colin Watson <cjwatson@debian.org>  Sun, 01 Apr 2012 02:00:26 +0100
+
+groff (1.21-6) unstable; urgency=low
+
+  * Add mdoc support for various BSD versions (thanks, Guillem Jover;
+    closes: #629159).
+
+ -- Colin Watson <cjwatson@debian.org>  Mon, 06 Jun 2011 12:09:05 +0100
+
+groff (1.21-5) unstable; urgency=low
+
+  * Fix -mm .RD macro to use .if rather than .ie (thanks, James Avera;
+    LP: #738169).
+
+ -- Colin Watson <cjwatson@debian.org>  Sat, 19 Mar 2011 22:48:00 +0000
+
+groff (1.21-4) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Colin Watson <cjwatson@debian.org>  Tue, 08 Feb 2011 10:29:38 +0000
+
+groff (1.21-3) experimental; urgency=low
+
+  * Go back to installing groff.info from the source directory, not the
+    build directory; timestamps are such that make won't rebuild it (closes:
+    #609459).
+
+ -- Colin Watson <cjwatson@debian.org>  Tue, 11 Jan 2011 03:37:52 +0000
+
+groff (1.21-2) experimental; urgency=low
+
+  * Build-depend on texinfo (closes: #609459).
+  * Only emit a single backspace for bold/underline in no-SGR mode.
+
+ -- Colin Watson <cjwatson@debian.org>  Mon, 10 Jan 2011 19:48:58 +0000
+
+groff (1.21-1) experimental; urgency=low
+
+  * New upstream release:
+    - New warning category 'file'.  (man-db uses this as part of
+      automatically enabling language-specific hyphenation rules, which
+      should now work.)
+    - CJK line-breaking and hyphenation support (closes: #552201).
+    - Fix typo in groff_man(7) (closes: #369254).
+    - Fix typo in "Character Translations" info node (closes: #450434).
+    - Fix white heart and diamond Unicode values in groff_char(7) (closes:
+      #540477).
+    - Point to troff(1) for -w and -W in groff(1) (closes: #545807).
+  * Document reasons for groff's Recommends in its package description
+    (closes: #599648).
+  * Switch build-dependency from byacc to bison, as that's what was used to
+    generate the parsers in the 1.21 release.
+  * Force YACC='bison -y' when configuring, to avoid problems if byacc is
+    also installed.
+  * Use a separate build directory, eliminating the requirement to preserve
+    some files by hand.
+  * Policy version 3.9.1:
+    - Rename debian/README.build to debian/README.source.
+    - Add a Homepage field.
+    - Refer to /usr/share/common-licenses/GFDL-1.3 in debian/copyright
+      rather than quoting it (although the GPL v3 governs this package, as
+      explained in detail in debian/copyright).
+    - Use Breaks rather than Conflicts.
+
+ -- Colin Watson <cjwatson@debian.org>  Sun, 09 Jan 2011 13:15:30 +0000
+
 groff (1.20.1-10) unstable; urgency=low
 
   * Handle ditroff command `Dt' without argument gracefully (closes:

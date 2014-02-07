@@ -9,7 +9,7 @@ Index: b/Makefile.in
 ===================================================================
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -190,7 +190,11 @@
+@@ -193,7 +193,11 @@
  # directory will be always added.
  # `troffrc' and `troffrc-end' (and `eqnrc') are searched neither in the
  # current nor in the home directory.

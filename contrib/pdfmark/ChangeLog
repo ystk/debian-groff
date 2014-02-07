@@ -1,3 +1,35 @@
+2010-12-23  Keith Marshall  <keith.d.marshall@ntlworld.com>
+
+	Update copyright notices; pdfmark.tmac bug-fix.
+
+	* pdfmark.tmac: Update copyright notices.
+	(pdf*href.mark.resolve): Avoid premature removal, by aliasing to...
+	(pdf*href.mark.begin): ...this, rather than renaming.
+
+	* pdfroff.sh, pdfroff.man: Update copyright notices.
+
+2010-12-14  Keith Marshall  <keith.d.marshall@ntlworld.com>
+
+	Clean up handling of temporary files directory.
+
+	* .cvsignore (pdfroff-*): Ignore sub-directories matching this.
+	* Makefile.sub (MOSTLCLEANDIRADD): Schedule them for removal.
+
+2010-12-02  Keith Marshall  <keith.d.marshall@ntlworld.com>
+
+	Address potential temporary file security vulnerabilities.
+
+	* pdfroff.sh (GROFF_TMPDIR): Use mktemp(1) to assign it, if possible;
+	fall back to ${TMPDIR}, ${TMP} or ${TEMP} if unsuccessful.
+	* pdfroff.man: Document it.
+
+2009-08-16  Colin Watson  <cjwatson@debian.org>
+
+	Make pdfroff's GhostScript invocation safer.
+
+	* pdfroff.sh (PDFROFF_POSTPROCESSOR_COMMAND): Add `-dSAFER' option.
+	* pdfroff.man: Document it.
+
 2008-12-28  Keith Marshall  <keith.d.marshall@ntlworld.com>
 
 	Avoid phantom line wrapping in pdfhref hot-spots.

@@ -3,11 +3,12 @@
 .ds RE \\$2
 ..
 .\"
-.\" $Id: m.tmac,v 2.36 2009/01/05 20:10:43 wl Exp $
-.@revision $Revision: 2.36 $
+.\" $Id: m.tmac,v 2.43 2010/06/24 10:45:57 wl Exp $
+.@revision $Revision: 2.43 $
 .ig
 
-Copyright (C) 1991-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009
+Copyright (C) 1991-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009,
+              2010
   Free Software Foundation, Inc.
 mgm is written by Jörgen Hägg <jh@axis.com>
 
@@ -24,7 +25,7 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-Please send bugreports with examples to jh@axis.com.
+Please send bug reports with examples to bug-groff@gnu.org.
 
 Naming convention stolen from mgs.
 Local names	module*name
@@ -54,6 +55,9 @@ Index		array!index
 .nr Ej 0
 .\"	Equation label adjust 0=left, 1=right
 .nr Eq 0
+.\"	Bullet string (for .BL)
+.ie n .ds BU \(bu
+.el .ds BU \s-2\(bu\s0
 .\"	Em dash string
 .ie n .ds EM " --
 .el .ds EM \(em
@@ -430,7 +434,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .	tm Paragraph nl=\\n[nl], last=\\n[hd*last-pos]
 .	tm Paragraph .k=\\n[.k], hsize=\\n[hd*last-hsize]
 .\}
-.if !((\\n[nl]=\\n[hd*last-pos]):(\\n[hd*last-hsize]=\\n[.k])) \{\
+.if !((\\n[nl]=\\n[hd*last-pos])&(\\n[hd*last-hsize]=\\n[.k])) \{\
 .	if \\n[D]>2 .tm Paragraph set ind-flag=1
 .	nr par@ind-flag 1
 .	\" any collected unprinted text?
@@ -445,7 +449,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .	tm Paragraph nl=\\n[nl], last=\\n[hd*last-pos]
 .	tm Paragraph .k=\\n[.k], hsize=\\n[hd*last-hsize]
 .\}
-.if !((\\n[nl]=\\n[hd*last-pos]):(\\n[hd*last-hsize]=\\n[.k])) \{\
+.if !((\\n[nl]=\\n[hd*last-pos])&(\\n[hd*last-hsize]=\\n[.k])) \{\
 .	if \\n[D]>2 .tm Paragraph set ind-flag=1
 .	nr par@ind-flag 1
 .\}
@@ -530,7 +534,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .\" .misc@pop-nr stackname varname
 .de misc@pop-nr
 .misc@pop \\$1
-.nr \\$2 \\*[misc*pop]
+.nr \\$2 0\\*[misc*pop]
 ..
 .\"-------------
 .\" .misc@pop-ds stackname varname
@@ -1198,6 +1202,9 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .als TPeh pg*even-header
 .als TPoh pg*odd-header
 .\"
+.als }b pg*footer
+.als }f pg*even-footer
+.als }p pg*odd-footer
 .als EOPf pg*footer
 .als EOPef pg*even-footer
 .als EOPof pg*odd-footer
@@ -1232,8 +1239,11 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .		ie d TP .TP
 .		el \{\
 '			sp 3
+.			ds hd*format \\g[P]
+.			af P 0
 .			ie ((\\n[P]=1)&((\\n[N]=1):(\\n[N]=2))) .sp
 .			el .tl \\*[pg*header]
+.			af P \\*[hd*format]
 .			ie o .tl \\*[pg*odd-header]
 .			el .tl \\*[pg*even-header]
 '			sp 2
@@ -1301,17 +1311,20 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .\" print the footer and eject new page
 .ev pg*tl-ev
 .pg@set-env
+.vpt 0
 .\" user defined end-of-page macro
 .ie d EOP .EOP
 .el \{\
-.	vpt 0
 .	ie o .tl \\*[pg*odd-footer]
 .	el .tl \\*[pg*even-footer]
+.	ds hd*format \\g[P]
+.	af P 0
 .	ie (\\n[P]=1)&(\\n[N]=1) .tl \\*[pg*header]
 .	el .tl \\*[pg*footer]
+.	af P \\*[hd*format]
 .	tl ''\\*[Pg_type!\\n[@copy_type]]''
-.	vpt 1
 .\}
+.vpt 1
 .ev
 .\" be sure that floating displays and footnotes will be
 .\" printed at the end of the document.
@@ -2240,10 +2253,8 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .ie \\n[.$]<3 .LB 0\\$1 0\\$2 0 0
 .el .LB 0\\$1 0\\$2 0 0 \& 0 1
 ..
-.\"	Bullet (for .BL)
 .de BL
 .if \\n[D]>2 .tm BL $*
-.ds BU \s-2\(bu\s0
 .if \\n[.$]>2 .@error "BL: too many arguments"
 .if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \\*[BU]
 .if \\n[.$]=1 .LB 0\\$1 0 1 0 \\*[BU]
@@ -2461,7 +2472,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .ie \\n[Sectp] \{\
 .	toc@save \\$1 "\\*[hd*mark]" "\\$2" \\*[hd*sect-pg]
 .\}
-.el .toc@save \\$1 "\\*[hd*mark]" "\\$2" \\n[%]
+.el .toc@save \\$1 "\\*[hd*mark]" "\\$2" \\n[P]
 ..
 .als )E toc@entry
 .\"-----------

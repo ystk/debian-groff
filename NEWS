@@ -1,5 +1,5 @@
     Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-                  2009
+                  2009, 2010
       Free Software Foundation, Inc.
 
     Copying and distribution of this file, with or without modification,
@@ -8,6 +8,57 @@
 
 This file describes recent user-visible changes in groff.  Bug fixes are not
 described.  There are more details in the man and info pages.
+
+VERSION 1.21
+============
+
+Troff
+-----
+
+o The new `lsm' request specifies a macro to be invoked when leading spaces
+  in an input line are encountered (which are removed then).  Number
+  registers `lsn' and `lss' hold the number of removed leading spaces and
+  the corresponding horizontal space, respectively.
+
+o There is a new warning category `file', enabled by default.  The `mso'
+  request emits warnings in this category when the requested macro file does
+  not exist.
+
+o The new `class' request assigns a short name to a set of characters
+  which can be referred to in the `cflags' request.  This is especially
+  useful to control line-breaking and hyphenation rules in CJK languages.
+
+o Three new values for the `cflags' request have been added, which are
+  needed for proper CJK support.
+
+    128  prohibit before but allow break after character
+    256  prohibit after but allow break before character
+    512  allow break before and after character
+
+Tbl
+---
+
+o A new global option `nowarn' suppresses warnings if tables are longer than
+  the current line width.
+
+Afmtodit
+--------
+
+o New option `-o' to specify the name of the output file.
+
+Macro Packages
+--------------
+
+o A new macro `%U' has been added to the mdoc package to indicate a URL
+  reference within an .Rs/.Re environment.
+
+o Rudimentary support for the Japanese script has been added, most suitable
+  for man page handling as output by grotty.  The file `ja.tmac' contains
+  the necessary setup to allow line breaks before and after CJK characters
+  (with proper exceptions).  Note, however, that no inter-character spacing
+  is implemented yet -- this usually causes many warnings about bad line
+  breaks.
+
 
 VERSION 1.20.1
 ==============

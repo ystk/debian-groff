@@ -28,7 +28,7 @@
 #
 # Thus, we pass -U to groff(1), and everything else to convert(1).
 #
-# $Id: grap2graph.sh,v 1.4 2005/05/18 07:03:06 wl Exp $
+# $Id: grap2graph.sh,v 1.5 2010/02/25 20:17:13 wl Exp $
 #
 groff_opts=""
 convert_opts=""
@@ -71,7 +71,7 @@ if test -z "$tmp"; then
     { (exit 1); exit 1; }
 fi
 
-trap 'exit_status=$?; rm -rf $tmp && exit $exit_status' 0 2 15 
+trap 'exit_status=$?; rm -rf $tmp && exit $exit_status' EXIT INT TERM
 
 # Here goes:
 # 1. Add .G1/.G2.

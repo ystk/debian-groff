@@ -6,7 +6,8 @@ groff_diff.man
 This file is part of groff, the GNU roff type-setting system.
 It is the source of the man-page groff_diff(7).
 
-Copyright (C) 1989, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009
+Copyright (C) 1989, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009,
+              2010
   Free Software Foundation, Inc.
 written by James Clark
 
@@ -137,7 +138,7 @@ Interpolate string
 taking
 .IR arg1 ,
 .IR arg2 ,
-.I .\|.\|.\&
+.IR .\|.\|. ,
 as arguments.
 .
 .TP
@@ -964,10 +965,11 @@ This is the same as
 .BR \[rs]p .
 .
 .TP
-.BI .cflags\  n\ c1\ c2\|.\|.\|.\&
+.BI .cflags\  "n c1 c2 .\|.\|."
 Characters
 .IR c1 ,
-.IR c2 ,\|.\|.\|.\&
+.IR c2 ,
+.IR .\|.\|. ,
 have properties determined by
 .IR n ,
 which is ORed from the following:
@@ -991,7 +993,6 @@ Lines can be broken after the character (initially characters
 have this property); a line is not broken at a character with this
 property unless the characters on each side both have non-zero
 hyphenation codes.
-
 This can be overridden with value 64.
 .
 .IP 8
@@ -1019,7 +1020,32 @@ have this property).
 Ignore hyphenation code values of the surrounding characters.
 Use this in combination with values 2 and\~4 (initially no characters
 have this property).
+.
+.IP 128
+Prohibit a line break before the character, but allow a line break after the
+character.
+This works only in combination with flags 256 and 512 and has no effect
+otherwise.
+.
+.IP 256
+Prohibit a line break after the character, but allow a line break before
+the character.
+This works only in combination with flags 128 and 512 and has no effect
+otherwise.
+.
+.IP 512
+Allow line break before or after the character.
+This works only in combination with flags 128 and 256 and has no effect
+otherwise.
 .RE
+.
+.IP
+Contrary to flag values 2 and\~4, the flags 128, 256, and 512 work pairwise.
+If, for example, the left character has value 512, and the right character
+128, no line break gets inserted.
+If we use value\~6 instead for the left character, a line break after the
+character can't be suppressed since the right neighbour character doesn't
+get examined.
 .
 .TP
 .BI .char\  c\ string
@@ -1090,6 +1116,21 @@ Chop the last element off macro, string, or diversion
 .IR xx .
 This is useful for removing the newline from the end of diversions
 that are to be interpolated as strings.
+.
+.TP
+.BI .class\  "name c1 c2 .\|.\|."
+Assign
+.I name
+to a set of characters
+.IR c1 ,
+.IR c2 ,
+.IR .\|.\|. ,
+so that they can be referred to from other requests easily (currently
+.B .cflags
+only).
+Character ranges (indicated by an intermediate `-') and nested classes
+are possible also.
+This is useful to assign properties to a large set of characters.
 .
 .TP
 .BI .close\  stream
@@ -1393,12 +1434,13 @@ request but before the list of fonts declared with
 .BR .special .
 .
 .TP
-.BI .fspecial\  f\ s1\ s2\|.\|.\|.\&
+.BI .fspecial\  "f s1 s2 .\|.\|."
 When the current font is\~\c
 .IR f ,
 fonts
 .IR s1 ,
-.IR s2 ,\|.\|.\|.\&
+.IR s2 ,
+.IR .\|.\|. ,
 are special, that is, they are searched for glyphs not in
 the current font.
 .
@@ -1469,7 +1511,7 @@ is missing,
 switch to the previous glyph color.
 .
 .TP
-.BI .hcode \ c1\ code1\ c2\ code2\|.\|.\|.\&
+.BI .hcode\  "c1 code1 c2 code2 .\|.\|."
 Set the hyphenation code of character
 .I c1
 to
@@ -1477,7 +1519,8 @@ to
 and that of
 .I c2
 to
-.IR code2 .
+.IR code2 ,
+and so on.
 A hyphenation code must be a single input character (not a special
 character) other than a digit or a space.
 .
@@ -1599,6 +1642,10 @@ Use the
 request to map the encoding used in hyphenation patterns files to
 .BR groff 's
 input encoding.
+.
+By default, everything maps to itself except letters `A' to `Z' which
+map to `a' to `z'.
+.
 .IP
 The set of hyphenation patterns is associated with the current language
 set by the
@@ -1620,7 +1667,7 @@ except that the hyphenation patterns from
 are appended to the patterns already loaded in the current language.
 .
 .TP
-.BI .hpfcode\  a\ b\ c\ d\ .\|.\|.
+.BI .hpfcode\  "a b c d .\|.\|."
 After reading a hyphenation patterns file with the
 .B hpf
 or
@@ -1767,6 +1814,19 @@ read-only number register
 is set to\~1 if in line-tabs mode, and 0 otherwise.
 .
 .TP
+.BI .lsm\  xx
+Set the leading spaces macro to
+.IR xx .
+If there are leading spaces in an input line, it is invoked instead of
+the usual troff behaviour; the leading spaces are removed.
+Registers
+.B \[rs]n[lsn]
+and
+.B \[rs]n[lss]
+hold the number of removed leading spaces and the corresponding
+horizontal space, respectively.
+.
+.TP
 .BI .mso\  file
 The same as the
 .B so
@@ -1783,6 +1843,12 @@ and it isn't found,
 tries to include
 .BI tmac. name
 instead and vice versa.
+.
+A warning of type
+.B file
+is generated if
+.I file
+can't be loaded, and the request is ignored.
 .
 .TP
 .BI .nop \ anything
@@ -1906,10 +1972,11 @@ and
 with a positive value which are applied after the line is output.
 .
 .TP
-.BI .rchar\  c1\ c2\|.\|.\|.\&
+.BI .rchar\  "c1 c2 .\|.\|."
 Remove the definitions of glyphs
 .IR c1 ,
-.IR c2 ,\|.\|.\|.
+.IR c2 ,
+.I .\|.\|.
 This undoes the effect of a
 .B char
 request.
@@ -1924,10 +1991,11 @@ from the macro one level higher.
 No effect otherwise.
 .
 .TP
-.BI .rfschar\  c1\ c2\|.\|.\|.\&
+.BI .rfschar\  "c1 c2 .\|.\|."
 Remove the font-specific definitions of glyphs
 .IR c1 ,
-.IR c2 ,\|.\|.\|.
+.IR c2 ,
+.I .\|.\|.
 This undoes the effect of a
 .B fschar
 request.
@@ -2015,7 +2083,7 @@ is missing, arguments are shifted by\~1.
 Shifting by negative amounts is currently undefined.
 .
 .TP
-.BI .sizes\  s1\ s2\|.\|.\|.\|sn\  [0]
+.BI .sizes\  s1\ s2\ .\|.\|.\ sn\  [0]
 This command is similar to the
 .B sizes
 command of a
@@ -2024,7 +2092,8 @@ file.
 .
 It sets the available font sizes for the current font to
 .IR s1 ,
-.IR s2 ,\|.\|.\|.\|,\~ sn
+.IR s2 ,
+.IR .\|.\|.\| ,\~ sn
 scaled points.
 .
 The list of sizes can be terminated by an optional\~\c
@@ -2039,10 +2108,11 @@ Contrary to the font file command, the list can't extend over more
 than a single line.
 .
 .TP
-.BI .special\  s1\ s2\|.\|.\|.\&
+.BI .special\  "s1 s2 .\|.\|."
 Fonts
 .IR s1 ,
-.IR s2 ,\|.\|.\|.\&
+.IR s2 ,
+.IR .\|.\|. ,
 are special and are searched for glyphs not in the current
 font.
 .
@@ -2539,18 +2609,21 @@ In GNU troff, as in UNIX troff, you should always follow a sentence
 with either a newline or two spaces.
 .
 .TP
-.BI .ta\  n1\ n2\|.\|.\|.nn \ T\  r1\ r2\|.\|.\|.\|rn
+.BI .ta\  "n1 n2 .\|.\|. nn " "T " "r1 r2 .\|.\|. rn"
 Set tabs at positions
 .IR n1 ,
-.IR n2 ,\|.\|.\|.\|,
+.IR n2 ,
+.IR .\|.\|. ,
 .I nn
 and then set tabs at
 .IR nn \|+\| r1 ,
-.IR nn \|+\| r2 ,\|.\|.\|.\|,
+.IR nn \|+\| r2 ,
+.IR .\|.\|. ,
 .IR nn \|+\| rn
 and then at
 .IR nn \|+\| rn \|+\| r1 ,
-.IR nn \|+\| rn \|+\| r2 ,\|.\|.\|.\|,
+.IR nn \|+\| rn \|+\| r2 ,
+.IR .\|.\|. ,
 .IR nn \|+\| rn \|+\| rn ,
 and so on.
 For example,
@@ -2767,6 +2840,16 @@ register.
 1\~if no-space mode is active, 0\~otherwise.
 .
 .TP
+.B \[rs]n[.O]
+The current output level as set with
+.BR \[rs]O .
+.
+.TP
+.B \[rs]n[.P]
+1\~if the current page is in the output list set with
+.BR \-o .
+.
+.TP
 .B \[rs]n[.pe]
 1\~during a page ejection caused by the
 .B bp
@@ -2900,7 +2983,7 @@ Zero if no magnification.
 .B \[rs]n[urx]
 .TQ
 .B \[rs]n[ury]
-These four registers are set by the
+These four read/\:write registers are set by the
 .B psbb
 request and contain the bounding box values (in PostScript units) of a
 given PostScript image.
@@ -2950,6 +3033,14 @@ Initialized at start-up.
 .TP
 .B \[rs]n[hp]
 The current horizontal position at input line.
+.
+.TP
+.B \[rs]n[lsn]
+.TQ
+.B \[rs]n[lss]
+If there are leading spaces in an input line, these registers
+hold the number of leading spaces and the corresponding
+horizontal space, respectively.
 .
 .TP
 .B \[rs]n[minutes]
@@ -3783,7 +3874,7 @@ classical `device-independent' troff did.
 .SH AUTHORS
 .\" --------------------------------------------------------------------
 .
-Copyright (C) 1989, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009
+Copyright (C) 1989, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009, 2010
 Free Software Foundation, Inc.
 .
 .P

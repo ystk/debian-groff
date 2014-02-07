@@ -51,6 +51,7 @@ usr/share/groff/@VERSION@/tmac/hyphen.us
 usr/share/groff/@VERSION@/tmac/hyphenex.cs
 usr/share/groff/@VERSION@/tmac/hyphenex.det
 usr/share/groff/@VERSION@/tmac/hyphenex.us
+usr/share/groff/@VERSION@/tmac/ja.tmac
 usr/share/groff/@VERSION@/tmac/latin1.tmac
 usr/share/groff/@VERSION@/tmac/latin2.tmac
 usr/share/groff/@VERSION@/tmac/latin5.tmac

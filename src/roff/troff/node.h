@@ -1,6 +1,6 @@
 // -*- C++ -*-
 /* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004,\
-                 2006, 2009
+                 2006, 2009, 2010
    Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -64,6 +64,7 @@ struct node {
   virtual int set_unformat_flag();
   virtual int force_tprint() = 0;
   virtual int is_tag() = 0;
+  virtual int get_break_code();
   virtual hunits width();
   virtual hunits subscript_correction();
   virtual hunits italic_correction();
@@ -134,6 +135,10 @@ inline node::node(node *n, statem *s, int divlevel)
 
 inline node::~node()
 {
+  if (state != 0)
+    delete state;
+  if (push_state != 0)
+    delete push_state;
 }
 
 // 0 means it doesn't, 1 means it does, 2 means it's transparent
@@ -174,7 +179,6 @@ protected:
   color *col;			/* for grotty */
   space_node(hunits, int, int, color *, statem *, int, node * = 0);
 public:
-  space_node(hunits, color *, statem *, int, node * = 0);
   space_node(hunits, color *, node * = 0);
 #if 0
   ~space_node();

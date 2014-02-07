@@ -1,11 +1,7 @@
 # Security
 groffer-temporary-files.patch
-pdfroff-temporary-files.patch
-pdfroff-safer.patch
 
 # Tool compatibility
-bashisms-gdiffmk.patch
-posix-trap.patch
 bash-scripts.patch
 mdate-perl.patch
 nroff-ifs.patch
@@ -14,10 +10,6 @@ awk-path.patch
 
 # Paper size handling
 papersize-pre-html.patch
-
-# Macro changes
-mdoc-ec.patch
-mdoc-updates.patch
 
 # Documentation
 doc-gfdl.patch
@@ -28,9 +20,12 @@ make-targets.patch
 
 # Other
 pic-eqn-warnings.patch
-libdriver-arg-safety.patch
+mdoc-bsd-versions.patch
 
 # Debian-specific configuration
 extratmacdirs.patch
 papersize-config.patch
 load-desc-failure.patch
+grotty-no-sgr.patch
+m-syntax.patch
+mom-doc-paths.patch
