@@ -1,11 +1,19 @@
-Description: Adjust #! line of font/devlj4/generate/special.awk
+From 3f4933f0add7cdd37cfb339fac6cf1e2070c025c Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:14 +0000
+Subject: Adjust #! line of font/devlj4/generate/special.awk
+
  awk is in /usr/bin/awk on Debian, not /bin/awk.
-Author: Colin Watson <cjwatson@debian.org>
 Forwarded: no
 Last-Update: 2010-03-01
 
-Index: b/font/devlj4/generate/special.awk
-===================================================================
+Patch-Name: awk-path.patch
+---
+ font/devlj4/generate/special.awk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/font/devlj4/generate/special.awk b/font/devlj4/generate/special.awk
+index 26e8b92..318c53f 100644
 --- a/font/devlj4/generate/special.awk
 +++ b/font/devlj4/generate/special.awk
 @@ -1,4 +1,4 @@

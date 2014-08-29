@@ -1,31 +1,19 @@
-# Security
 groffer-temporary-files.patch
-
-# Tool compatibility
 bash-scripts.patch
 mdate-perl.patch
 nroff-ifs.patch
 font-sed-basic-regex.patch
 awk-path.patch
-
-# Paper size handling
 papersize-pre-html.patch
-
-# Documentation
 doc-gfdl.patch
 doc-gzipped.patch
-
-# Build system
 make-targets.patch
-
-# Other
 pic-eqn-warnings.patch
-mdoc-bsd-versions.patch
-
-# Debian-specific configuration
 extratmacdirs.patch
 papersize-config.patch
 load-desc-failure.patch
-grotty-no-sgr.patch
-m-syntax.patch
-mom-doc-paths.patch
+texinfo-syntax.patch
+grolbp-crash.patch
+bsd-versions.patch
+no-validation-icons.patch
+mmse-note.patch

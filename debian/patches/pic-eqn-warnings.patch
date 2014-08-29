@@ -1,16 +1,25 @@
-Description: Inhibit -wmac warnings due to pic and eqn
+From 8bed5e22bc3b25a91c83372d9523100b2e25bf38 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:19 +0000
+Subject: Inhibit -wmac warnings due to pic and eqn
+
  Define .PS and .PE to empty strings in pic output to inhibit -wmac
  warnings; similarly, define .EQ and .EN to empty strings in eqn output.
-Author: Colin Watson <cjwatson@debian.org>
 Bug-Debian: http://bugs.debian.org/495713
 Forwarded: no
-Last-Update: 2010-03-01
+Last-Update: 2013-01-07
 
-Index: b/src/preproc/eqn/main.cpp
-===================================================================
+Patch-Name: pic-eqn-warnings.patch
+---
+ src/preproc/eqn/main.cpp | 2 ++
+ src/preproc/pic/main.cpp | 4 ++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/src/preproc/eqn/main.cpp b/src/preproc/eqn/main.cpp
+index 167fb4e..79b8565 100644
 --- a/src/preproc/eqn/main.cpp
 +++ b/src/preproc/eqn/main.cpp
-@@ -374,6 +374,8 @@
+@@ -374,6 +374,8 @@ int main(int argc, char **argv)
      }
    init_table(device);
    init_char_table();
@@ -19,11 +28,11 @@ Index: b/src/preproc/eqn/main.cpp
    if (output_format == troff) {
      printf(".if !'\\*(.T'%s' "
  	   ".if !'\\*(.T'html' "	// the html device uses `-Tps' to render
-Index: b/src/preproc/pic/main.cpp
-===================================================================
+diff --git a/src/preproc/pic/main.cpp b/src/preproc/pic/main.cpp
+index f242da0..f4d0fbe 100644
 --- a/src/preproc/pic/main.cpp
 +++ b/src/preproc/pic/main.cpp
-@@ -612,7 +612,11 @@
+@@ -616,7 +616,11 @@ int main(int argc, char **argv)
      out = make_fig_output();
    else
  #endif

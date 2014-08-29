@@ -1,14 +1,31 @@
-Description: Add GFDL references to manual pages licensed under GFDL
-Author: Colin Watson <cjwatson@debian.org>
+From 029acae041c67f5aa18321ac6c2bc11d7bd4abd9 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:16 +0000
+Subject: Add GFDL references to manual pages licensed under GFDL
+
 Bug-Debian: http://bugs.debian.org/292229
 Forwarded: not-needed
-Last-Update: 2010-03-01
+Last-Update: 2013-01-07
 
-Index: b/contrib/mom/groff_mom.man
-===================================================================
+Patch-Name: doc-gfdl.patch
+---
+ contrib/mom/groff_mom.man | 4 ++++
+ man/ditroff.man           | 4 ++++
+ man/groff.man             | 4 ++++
+ man/groff_diff.man        | 4 ++++
+ man/groff_out.man         | 4 ++++
+ man/groff_tmac.man        | 4 ++++
+ man/roff.man              | 4 ++++
+ src/roff/groff/groff.man  | 4 ++++
+ src/roff/troff/troff.man  | 4 ++++
+ tmac/groff_trace.man      | 4 ++++
+ 10 files changed, 40 insertions(+)
+
+diff --git a/contrib/mom/groff_mom.man b/contrib/mom/groff_mom.man
+index 39ec33f..374a894 100644
 --- a/contrib/mom/groff_mom.man
 +++ b/contrib/mom/groff_mom.man
-@@ -14,6 +14,10 @@
+@@ -15,6 +15,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -19,11 +36,11 @@ Index: b/contrib/mom/groff_mom.man
  .
  .do nr groff_mom_C \n[.C]
  .cp 0
-Index: b/man/ditroff.man
-===================================================================
+diff --git a/man/ditroff.man b/man/ditroff.man
+index af1ec44..cf6c5c5 100644
 --- a/man/ditroff.man
 +++ b/man/ditroff.man
-@@ -17,6 +17,10 @@
+@@ -17,6 +17,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -34,11 +51,11 @@ Index: b/man/ditroff.man
  .
  .
  .\" --------------------------------------------------------------------
-Index: b/man/groff.man
-===================================================================
+diff --git a/man/groff.man b/man/groff.man
+index e138a8e..142b565 100644
 --- a/man/groff.man
 +++ b/man/groff.man
-@@ -19,6 +19,10 @@
+@@ -18,6 +18,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -49,26 +66,11 @@ Index: b/man/groff.man
  .
  .\" --------------------------------------------------------------------
  .\" Setup
-Index: b/man/groff_char.man
-===================================================================
---- a/man/groff_char.man
-+++ b/man/groff_char.man
-@@ -32,6 +32,10 @@
- A copy of the Free Documentation License is included as a file called
- FDL in the main directory of the groff source package.
- ..
-+.ig
-+A copy of the GNU Free Documentation License is also available in this
-+Debian package as /usr/share/doc/groff/copyright.
-+..
- .
- .\" --------------------------------------------------------------------
- .\" Setup Part 1
-Index: b/man/groff_diff.man
-===================================================================
+diff --git a/man/groff_diff.man b/man/groff_diff.man
+index d523909..019f7aa 100644
 --- a/man/groff_diff.man
 +++ b/man/groff_diff.man
-@@ -23,6 +23,10 @@
+@@ -22,6 +22,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -79,11 +81,11 @@ Index: b/man/groff_diff.man
  .
  .
  .\" --------------------------------------------------------------------
-Index: b/man/groff_out.man
-===================================================================
+diff --git a/man/groff_out.man b/man/groff_out.man
+index a9ac838..aa6c638 100644
 --- a/man/groff_out.man
 +++ b/man/groff_out.man
-@@ -19,6 +19,10 @@
+@@ -19,6 +19,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -94,11 +96,11 @@ Index: b/man/groff_out.man
  .
  .\" --------------------------------------------------------------------
  .\" Setup
-Index: b/man/groff_tmac.man
-===================================================================
+diff --git a/man/groff_tmac.man b/man/groff_tmac.man
+index 321f6d4..633f80e 100644
 --- a/man/groff_tmac.man
 +++ b/man/groff_tmac.man
-@@ -19,6 +19,10 @@
+@@ -19,6 +19,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -109,11 +111,11 @@ Index: b/man/groff_tmac.man
  .ds Ellipsis \&.\|.\|.\&\"
  .
  .TH GROFF_TMAC @MAN5EXT@ "@MDATE@" "Groff Version @VERSION@"
-Index: b/man/roff.man
-===================================================================
+diff --git a/man/roff.man b/man/roff.man
+index dcf268a..6ca4738 100644
 --- a/man/roff.man
 +++ b/man/roff.man
-@@ -18,6 +18,10 @@
+@@ -18,6 +18,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -124,11 +126,11 @@ Index: b/man/roff.man
  .
  .
  .\" --------------------------------------------------------------------
-Index: b/src/roff/groff/groff.man
-===================================================================
+diff --git a/src/roff/groff/groff.man b/src/roff/groff/groff.man
+index 262ad2d..43220ab 100644
 --- a/src/roff/groff/groff.man
 +++ b/src/roff/groff/groff.man
-@@ -14,6 +14,10 @@
+@@ -14,6 +14,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -139,11 +141,11 @@ Index: b/src/roff/groff/groff.man
  .
  .
  .\" --------------------------------------------------------------------
-Index: b/src/roff/troff/troff.man
-===================================================================
+diff --git a/src/roff/troff/troff.man b/src/roff/troff/troff.man
+index 4442c9d..0e1d5e5 100644
 --- a/src/roff/troff/troff.man
 +++ b/src/roff/troff/troff.man
-@@ -21,6 +21,10 @@
+@@ -21,6 +21,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..
@@ -154,11 +156,11 @@ Index: b/src/roff/troff/troff.man
  .
  .\" --------------------------------------------------------------------
  .\" Title
-Index: b/tmac/groff_trace.man
-===================================================================
+diff --git a/tmac/groff_trace.man b/tmac/groff_trace.man
+index 0c78037..9771863 100644
 --- a/tmac/groff_trace.man
 +++ b/tmac/groff_trace.man
-@@ -21,6 +21,10 @@
+@@ -21,6 +21,10 @@ Front-Cover Texts, and with no Back-Cover Texts.
  A copy of the Free Documentation License is included as a file called
  FDL in the main directory of the groff source package.
  ..

@@ -1,0 +1,27 @@
+From eb2e88e707c13092782577a396637857a98f4ef6 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:24 +0000
+Subject: Fix grolbp crash if a printer was never created
+
+Forwarded: http://lists.gnu.org/archive/html/bug-groff/2013-07/msg00004.html
+Applied-Upstream: https://bazaar.launchpad.net/+branch/groff/revision/2216
+Last-Update: 2013-07-03
+
+Patch-Name: grolbp-crash.patch
+---
+ src/devices/grolbp/lbp.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/devices/grolbp/lbp.cpp b/src/devices/grolbp/lbp.cpp
+index 8a32b45..a33efe6 100644
+--- a/src/devices/grolbp/lbp.cpp
++++ b/src/devices/grolbp/lbp.cpp
+@@ -719,6 +719,7 @@ int main(int argc, char **argv)
+     do_file("-");
+   while (optind < argc)
+     do_file(argv[optind++]);
+-  lbpputs("\033c\033<");
++  if (lbpoutput)
++    lbpputs("\033c\033<");
+   return 0;
+ }

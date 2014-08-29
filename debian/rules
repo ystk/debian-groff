@@ -1,6 +1,6 @@
 #! /usr/bin/make -f
 build clean install binary-arch binary-indep binary:
-	dh --builddirectory=debian/build $@
+	dh $@ --builddirectory=debian/build --with=autoreconf --parallel
 
 export DH_OPTIONS
 
@@ -40,6 +40,9 @@ ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
   confflags_gnulib += --host=$(DEB_HOST_GNU_TYPE)
 endif
 
+override_dh_autoreconf:
+	dh_autoreconf autoreconf -- -f -i -I m4
+
 override_dh_auto_configure:
 	-rm -f config.log config.cache
 	$(buildflags) YACC='bison -y' PSPRINT=lpr PAGE=A4 \
@@ -52,6 +55,7 @@ override_dh_auto_configure:
 ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
 	$(buildflags) YACC='bison -y' PSPRINT=lpr PAGE=A4 \
 		DEB_HOST_GNU_TYPE=$(DEB_BUILD_GNU_TYPE) \
+		env -u CONFIG_SITE \
 		dh_auto_configure --builddirectory=debian/build-native -- \
 			$(confflags) \
 			--with-appresdir=/etc/X11/app-defaults
@@ -105,7 +109,11 @@ override_dh_auto_install:
 		INSTALL_INFO=:
 
 %: %.in
-	sed -e 's/@VERSION@/$(upstream)/g' $< > $@
+ifeq ($(GROFF_X11),yes)
+	sed -e 's/@VERSION@/$(upstream)/g' -e 's/@IF_GROFF_X11@//g' $< > $@
+else
+	sed -e 's/@VERSION@/$(upstream)/g' -e 's/@IF_GROFF_X11@/#/g' $< > $@
+endif
 
 override_dh_install:
 	$(MAKE) -f debian/rules \
@@ -129,8 +137,12 @@ override_dh_installdocs:
 override_dh_installchangelogs:
 	dh_installchangelogs -pgroff-base
 
+override_dh_compress:
+	dh_compress -X.mom
+
 override_dh_builddeb:
-	dh_builddeb
+	dh_builddeb -pgroff-base -- -Zgzip
+	dh_builddeb -Ngroff-base -- -Zxz
 ifneq ($(GROFF_X11),yes)
 	@echo
 	@echo "=========================================================="
@@ -140,13 +152,4 @@ ifneq ($(GROFF_X11),yes)
 	@echo
 endif
 
-# You only need to run this immediately after checking out the package from
-# revision control.
-quilt-setup:
-	[ ! -d .pc ]
-	set -e; for patch in $$(quilt series | tac); do \
-		patch -p1 -R --no-backup-if-mismatch <"debian/patches/$$patch"; \
-	done
-	quilt push -a
-
-.PHONY: build clean install binary-arch binary-indep binary quilt-setup
+.PHONY: build clean install binary-arch binary-indep binary

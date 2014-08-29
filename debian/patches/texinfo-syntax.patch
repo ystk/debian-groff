@@ -1,0 +1,27 @@
+From eeae79bf4d2281298bee4c65da7c13bcd8b3c298 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:23 +0000
+Subject: Fix bad Texinfo markup for \z escape
+
+Forwarded: http://lists.gnu.org/archive/html/bug-groff/2013-07/msg00003.html
+Applied-Upstream: https://bazaar.launchpad.net/+branch/groff/revision/2217
+Last-Update: 2013-07-03
+
+Patch-Name: texinfo-syntax.patch
+---
+ doc/groff.texinfo | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/doc/groff.texinfo b/doc/groff.texinfo
+index 2eae72e..93686d0 100644
+--- a/doc/groff.texinfo
++++ b/doc/groff.texinfo
+@@ -11931,7 +11931,7 @@ centered, and the resulting spacing is the largest width of the affected
+ glyphs.
+ @endDefesc
+ 
+-@Defesc {\\z, , g, , }
++@Defesc {\\z, , g, }
+ @cindex zero-width printing (@code{\z}, @code{\Z})
+ @cindex printing, zero-width (@code{\z}, @code{\Z})
+ Print glyph @var{g} with zero width, i.e., without spacing.  Use this to

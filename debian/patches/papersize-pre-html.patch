@@ -1,17 +1,25 @@
-Description: Set appropriate papersize when calling gs from HTML preprocessor
+From 6ed956f5c40f84f91d2ed11c012644494a29cd67 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:15 +0000
+Subject: Set appropriate papersize when calling gs from HTML preprocessor
+
  This patch seems fishy.  get_papersize was removed upstream in r335.1.348,
  so should we even be applying this any more?  Furthermore, we don't use
  gsPaper anywhere, and looking at devps/DESC here is just nasty.  Needs
  review.
-Author: Colin Watson <cjwatson@debian.org>
 Forwarded: no
-Last-Update: 2010-03-01
+Last-Update: 2013-01-07
 
-Index: b/src/preproc/html/pre-html.cpp
-===================================================================
+Patch-Name: papersize-pre-html.patch
+---
+ src/preproc/html/pre-html.cpp | 54 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
+
+diff --git a/src/preproc/html/pre-html.cpp b/src/preproc/html/pre-html.cpp
+index fae164c..2876a45 100644
 --- a/src/preproc/html/pre-html.cpp
 +++ b/src/preproc/html/pre-html.cpp
-@@ -152,6 +152,10 @@
+@@ -152,6 +152,10 @@ extern "C" const char *Version_string;
  #define DEFAULT_IMAGE_RES 100	// number of pixels per inch resolution
  #define IMAGE_BOARDER_PIXELS 0
  #define INLINE_LEADER_CHAR '\\'
@@ -22,7 +30,7 @@ Index: b/src/preproc/html/pre-html.cpp
  
  // Don't use colour names here!  Otherwise there is a dependency on
  // a file called `rgb.txt' which maps names to colours.
-@@ -199,6 +203,7 @@
+@@ -199,6 +203,7 @@ static char *macroset_template= NULL;	// image template passed to troff
  					// by -D
  static int troff_arg = 0;		// troff arg index
  static char *image_dir = NULL;		// user specified image directory
@@ -30,7 +38,7 @@ Index: b/src/preproc/html/pre-html.cpp
  static int textAlphaBits = MAX_ALPHA_BITS;
  static int graphicAlphaBits = MAX_ALPHA_BITS;
  static char *antiAlias = NULL;		// antialias arguments we pass to gs
-@@ -312,6 +317,54 @@
+@@ -312,6 +317,54 @@ static unsigned int get_resolution(void)
  }
  
  /*
@@ -85,7 +93,7 @@ Index: b/src/preproc/html/pre-html.cpp
   *  html_system - A wrapper for system().
   */
  
-@@ -1781,6 +1834,7 @@
+@@ -1782,6 +1835,7 @@ int main(int argc, char **argv)
    if (image_gen == NULL || (strcmp(image_gen, "") == 0))
      fatal("devhtml/DESC must set the image_generator field, exiting");
    postscriptRes = get_resolution();

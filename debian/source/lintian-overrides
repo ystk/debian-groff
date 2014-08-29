@@ -1,0 +1,3 @@
+# These files are dual-licensed under GPLv3+.  See debian/copyright.
+groff source: license-problem-gfdl-invariants doc/groff.info*
+groff source: license-problem-gfdl-invariants doc/groff.texinfo*

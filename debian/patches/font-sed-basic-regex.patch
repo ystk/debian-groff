@@ -1,15 +1,23 @@
-Description: '+' isn't a regex metacharacter in sed by default
+From 42bada9c0e251d9308d2d4e627f93a9d57857da0 Mon Sep 17 00:00:00 2001
+From: Fumitoshi UKAI <ukai@debian.or.jp>
+Date: Thu, 2 Jan 2014 13:13:13 +0000
+Subject: '+' isn't a regex metacharacter in sed by default
+
  Why are we only doing this for devascii?  Probably a bug one way or
  another, but needs review before forwarding.
-Author: Fumitoshi UKAI <ukai@debian.or.jp>
 Forwarded: no
 Last-Update: 2010-03-01
 
-Index: b/font/devascii/Makefile.sub
-===================================================================
+Patch-Name: font-sed-basic-regex.patch
+---
+ font/devascii/Makefile.sub | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/font/devascii/Makefile.sub b/font/devascii/Makefile.sub
+index 43b2b46..0fa2e77 100644
 --- a/font/devascii/Makefile.sub
 +++ b/font/devascii/Makefile.sub
-@@ -12,8 +12,8 @@
+@@ -12,8 +12,8 @@ $(FONTS): R.proto
  	@-rm -f $@
  	@(charwidth=`expr $(RES) / $(CPI)` ; \
   	 sed -e "s/^name [A-Z]*$$/name $@/" \

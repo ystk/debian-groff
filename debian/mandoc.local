@@ -10,15 +10,10 @@
 .  if '\V[GROFF_SGR]'' \
 .    output x X tty: sgr 0
 .
-.  \" Debian: Map \- to the Unicode HYPHEN-MINUS character, to make
-.  \" searching in man pages easier.
-.  if '\*[.T]'utf8' \
-.    char \- \N'45'
-.
-.  \" Debian: Many UTF-8 man pages use "-" instead of "\-" for dashes such
-.  \" as those in command-line options. This is a bug in those pages, but
-.  \" too many fonts are missing the Unicode HYPHEN character, so we render
-.  \" this as the ASCII-compatible HYPHEN-MINUS instead.
-.  if '\*[.T]'utf8' \
-.    char - \N'45'
+.  \" Debian: Strictly, "-" is a hyphen while "\-" is a minus sign, and the
+.  \" former may not always be rendered in the form expected for things like
+.  \" command-line options.  Uncomment this if you want to make sure that
+.  \" manual pages you're writing are clear of this problem.
+.  \" if '\*[.T]'utf8' \
+.  \"   char - \[hy]
 .\}

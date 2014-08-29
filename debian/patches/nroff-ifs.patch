@@ -1,13 +1,21 @@
-Description: Unset IFS at nroff startup
+From d0589605eb11cc49004f45b1f1b46942f200b479 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:12 +0000
+Subject: Unset IFS at nroff startup
+
  It's questionable whether we should forward this; as noted in the bug
  trail, there's a decent argument that this is a dash bug.
-Author: Colin Watson <cjwatson@debian.org>
 Bug-Debian: http://bugs.debian.org/541621
 Forwarded: no
 Last-Update: 2010-03-01
 
-Index: b/src/roff/nroff/nroff.sh
-===================================================================
+Patch-Name: nroff-ifs.patch
+---
+ src/roff/nroff/nroff.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/roff/nroff/nroff.sh b/src/roff/nroff/nroff.sh
+index d4bd8a0..9c4d611 100644
 --- a/src/roff/nroff/nroff.sh
 +++ b/src/roff/nroff/nroff.sh
 @@ -22,6 +22,8 @@

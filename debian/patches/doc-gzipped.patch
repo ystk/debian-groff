@@ -1,14 +1,23 @@
-Description: Adjust documentation references to account for compression
-Author: Colin Watson <cjwatson@debian.org>
+From 7cc537c74ce77fd0cc0b10de1bcd57ef00300e59 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Thu, 2 Jan 2014 13:13:17 +0000
+Subject: Adjust documentation references to account for compression
+
 Bug-Debian: http://bugs.debian.org/498356
 Forwarded: not-needed
 Last-Update: 2010-03-01
 
-Index: b/contrib/pdfmark/pdfroff.man
-===================================================================
+Patch-Name: doc-gzipped.patch
+---
+ contrib/pdfmark/pdfroff.man | 2 +-
+ src/preproc/pic/pic.man     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/contrib/pdfmark/pdfroff.man b/contrib/pdfmark/pdfroff.man
+index 3a1d705..58b0f3d 100644
 --- a/contrib/pdfmark/pdfroff.man
 +++ b/contrib/pdfmark/pdfroff.man
-@@ -796,7 +796,7 @@
+@@ -796,7 +796,7 @@ Detailed documentation on the use of these packages may be found,
  in PDF format, in the reference guide
  .BR "\*(lqPortable Document Format Publishing with GNU Troff\*(rq" ,
  included in the installed documentation set as
@@ -17,11 +26,11 @@ Index: b/contrib/pdfmark/pdfroff.man
  .
  .
  .\" --------------------------------------------------------------------
-Index: b/src/preproc/pic/pic.man
-===================================================================
+diff --git a/src/preproc/pic/pic.man b/src/preproc/pic/pic.man
+index e845dd1..369fd13 100644
 --- a/src/preproc/pic/pic.man
 +++ b/src/preproc/pic/pic.man
-@@ -227,7 +227,7 @@
+@@ -227,7 +227,7 @@ Many of these differences also apply to newer versions of Unix
  A complete documentation is available in the file
  .LP
  .RS

@@ -1,12 +1,20 @@
-Description: Avoid relying on awk in mdate.sh
+From c4b6c222d65aa0b42fe6a8ced4423e47b19c4841 Mon Sep 17 00:00:00 2001
+From: Florian Lohoff <flo@rfc822.org>
+Date: Thu, 2 Jan 2014 13:13:10 +0000
+Subject: Avoid relying on awk in mdate.sh
+
  The results were unpredictable on mips/mipsel.
-Author: Florian Lohoff <flo@rfc822.org>
 Bug-Debian: http://bugs.debian.org/62554
 Forwarded: no
 Last-Update: 2010-03-01
 
-Index: b/mdate.sh
-===================================================================
+Patch-Name: mdate-perl.patch
+---
+ mdate.sh | 39 +--------------------------------------
+ 1 file changed, 1 insertion(+), 38 deletions(-)
+
+diff --git a/mdate.sh b/mdate.sh
+index 912dbf9..5ed6e9b 100644
 --- a/mdate.sh
 +++ b/mdate.sh
 @@ -20,41 +20,4 @@

@@ -2,11 +2,11 @@ Source: groff
 Section: text
 Priority: important
 Maintainer: Colin Watson <cjwatson@debian.org>
-Standards-Version: 3.9.1
-Build-Depends: bison (>= 1:1.875b), debhelper (>= 7.4.2), dpkg-dev (>= 1.15.7~), ghostscript, netpbm, psutils, xutils-dev, x11proto-core-dev, libx11-dev, libxmu-dev, libxt-dev, libxaw7-dev, texinfo (>= 4.8)
-Homepage: http://groff.ffii.org/
-Vcs-Bzr: http://bzr.debian.org/users/cjwatson/groff/trunk
-Vcs-Browser: http://bzr.debian.org/loggerhead/users/cjwatson/groff/trunk
+Standards-Version: 3.9.5
+Build-Depends: bison (>= 1:1.875b), debhelper (>= 7.4.2), dpkg-dev (>= 1.15.7~), ghostscript, netpbm, psutils, xutils-dev, x11proto-core-dev, libx11-dev, libxmu-dev, libxt-dev, libxaw7-dev, texinfo (>= 4.8), dh-autoreconf
+Homepage: https://www.gnu.org/software/groff/
+Vcs-Git: git://anonscm.debian.org/users/cjwatson/groff.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=users/cjwatson/groff.git
 
 Package: groff-base
 Architecture: any
@@ -30,7 +30,7 @@ Package: groff
 Priority: optional
 Architecture: any
 Depends: groff-base (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Recommends: ghostscript, imagemagick, libpaper1, netpbm, psutils
+Recommends: ghostscript, imagemagick, libpaper1, netpbm, perl, psutils
 Provides: jgroff, groff-x11
 Breaks: jgroff (<< 1.17-1), groff-x11 (<< 1.18-1)
 Replaces: jgroff (<< 1.17-1), groff-base (<< 1.17.2-9), groff-x11 (<< 1.18-1)
@@ -40,8 +40,8 @@ Description: GNU troff text-formatting system
  system. The core package, groff-base, contains the traditional tools like
  troff, nroff, tbl, eqn, and pic. This package contains additional devices
  and drivers for output to DVI, HTML (when recommended packages are
- installed - see below), HP LaserJet printers, and Canon CAPSL LBP-4 and
- LBP-8 printers.
+ installed - see below), PDF, HP LaserJet printers, and Canon CAPSL LBP-4
+ and LBP-8 printers.
  .
  The X75, X75-12, X100, and X100-12 devices, which allow groff output to be
  conveniently viewed on an X display using the standard X11 fonts, are now
@@ -67,7 +67,8 @@ Description: GNU troff text-formatting system
     use with groff;
   - mmroff, a simple groff preprocessor which expands references in mm;
   - pic2graph, which converts PIC diagrams into cropped image files;
-  - eqn2graph, which converts EQN equations into cropped image files.
+  - eqn2graph, which converts EQN equations into cropped image files;
+  - pdfmom, which runs 'groff -mom' to produce PDFs.
  .
  All the standard macro packages are supported.
  .
@@ -76,4 +77,5 @@ Description: GNU troff text-formatting system
   - ghostscript, netpbm, psutils: required for HTML output;
   - imagemagick: required for the pic2graph and eqn2graph programs;
   - libpaper1: paper size detection in dvi, lbp, lj4, and ps devices (falls
-    back to a4 if not installed).
+    back to a4 if not installed);
+  - perl: required for PDF output and for the chem preprocessor.

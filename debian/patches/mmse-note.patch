@@ -1,0 +1,71 @@
+From 9248c3ee038d3e5d1fd5ff748bf72a53d47b7a2d Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@debian.org>
+Date: Sun, 26 Jan 2014 19:34:00 +0000
+Subject: Note that groff_mmse(7) is only available in Swedish locales
+
+Bug-Debian: http://bugs.debian.org/710431
+Forwarded: no
+Last-Update: 2014-01-26
+
+Patch-Name: mmse-note.patch
+---
+ contrib/mm/groff_mm.man  | 1 +
+ contrib/mm/mmroff.man    | 3 ++-
+ man/groff_tmac.man       | 3 ++-
+ src/roff/groff/groff.man | 3 ++-
+ 4 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/contrib/mm/groff_mm.man b/contrib/mm/groff_mm.man
+index 71f6fda..96b5726 100644
+--- a/contrib/mm/groff_mm.man
++++ b/contrib/mm/groff_mm.man
+@@ -3494,6 +3494,7 @@ J
+ .BR @g@eqn (@MAN1EXT@)
+ .br
+ .BR groff_mmse (@MAN7EXT@)
++(only in Swedish locales)
+ .
+ .\" Local Variables:
+ .\" mode: nroff
+diff --git a/contrib/mm/mmroff.man b/contrib/mm/mmroff.man
+index 843b7c9..7c184df 100644
+--- a/contrib/mm/mmroff.man
++++ b/contrib/mm/mmroff.man
+@@ -55,7 +55,8 @@ J
+ .B @TMAC_MDIR@/locale
+ .SH "SEE ALSO"
+ .BR groff_mm(@MAN7EXT@),
+-.BR groff_mmse(@MAN7EXT@),
++.BR groff_mmse(@MAN7EXT@)
++(only in Swedish locales),
+ .BR groff (@MAN1EXT@),
+ .BR @g@troff (@MAN1EXT@),
+ .BR @g@tbl (@MAN1EXT@),
+diff --git a/man/groff_tmac.man b/man/groff_tmac.man
+index 633f80e..7b10c3d 100644
+--- a/man/groff_tmac.man
++++ b/man/groff_tmac.man
+@@ -232,7 +232,8 @@ ligature.
+ Swedish localization support, including the me, mom, and ms macro packages.
+ .
+ Note that Swedish for the mm macros is handled separately; see
+-.BR groff_mmse (@MAN7EXT@).
++.BR groff_mmse (@MAN7EXT@)
++(only in Swedish locales).
+ .
+ It should be used as the last macro package on the command line.
+ .
+diff --git a/src/roff/groff/groff.man b/src/roff/groff/groff.man
+index 43220ab..7fd7302 100644
+--- a/src/roff/groff/groff.man
++++ b/src/roff/groff/groff.man
+@@ -1875,7 +1875,8 @@ Groff macro packages and macro-specific utilities:
+ .BR \%groff_mdoc (@MAN7EXT@),
+ .BR \%groff_me (@MAN7EXT@),
+ .BR \%groff_mm (@MAN7EXT@),
+-.BR \%groff_mmse (@MAN7EXT@),
++.BR \%groff_mmse (@MAN7EXT@)
++(only in Swedish locales),
+ .BR \%groff_mom (@MAN7EXT@),
+ .BR \%groff_ms (@MAN7EXT@),
+ .BR \%groff_www (@MAN7EXT@),
