@@ -1,15 +1,15 @@
 #! /usr/bin/make -f
-build clean install binary-arch binary-indep binary:
+%:
 	dh $@ --builddirectory=debian/build --with=autoreconf --parallel
 
 export DH_OPTIONS
 
-CPPFLAGS += $(shell dpkg-buildflags --get CPPFLAGS)
-CFLAGS = $(shell dpkg-buildflags --get CFLAGS)
-CFLAGS += -Wall
-CXXFLAGS = $(shell dpkg-buildflags --get CXXFLAGS)
-CXXFLAGS += -Wall
-LDFLAGS = $(shell dpkg-buildflags --get LDFLAGS)
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND := -Wall
+export DEB_CXXFLAGS_MAINT_APPEND := -Wall
+
+include /usr/share/dpkg/buildflags.mk
+
 buildflags := CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
 	      CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
 
@@ -108,7 +108,7 @@ override_dh_auto_install:
 		docdir=\$${prefix}/share/doc/groff-base \
 		INSTALL_INFO=:
 
-%: %.in
+debian/%: debian/%.in
 ifeq ($(GROFF_X11),yes)
 	sed -e 's/@VERSION@/$(upstream)/g' -e 's/@IF_GROFF_X11@//g' $< > $@
 else
@@ -151,5 +151,3 @@ ifneq ($(GROFF_X11),yes)
 	@echo "=========================================================="
 	@echo
 endif
-
-.PHONY: build clean install binary-arch binary-indep binary

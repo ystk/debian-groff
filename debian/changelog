@@ -1,3 +1,18 @@
+groff (1.22.2-8) unstable; urgency=medium
+
+  * Update Vcs-Browser URL yet again.
+
+ -- Colin Watson <cjwatson@debian.org>  Thu, 04 Sep 2014 17:50:22 +0100
+
+groff (1.22.2-7) unstable; urgency=medium
+
+  * Simplify debian/rules slightly to avoid hardcoding the list of targets
+    that dh(1) understands.
+  * Update Vcs-Browser URL for alioth cgit.
+  * Build with all hardening options.
+
+ -- Colin Watson <cjwatson@debian.org>  Sun, 31 Aug 2014 03:51:26 +0100
+
 groff (1.22.2-6) unstable; urgency=medium
 
   * Note that groff_mmse(7) is only available in Swedish locales (closes:
